@@ -241,8 +241,6 @@ class LSM6(object):
 
             zval = self._combineHiLo(zh, zl)
 
-        import pdb; pdb.set_trace()
-
         return (xval, yval, zval)
 
 
