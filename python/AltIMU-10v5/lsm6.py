@@ -112,7 +112,10 @@ class LSM6(object):
 
 
     def __del__(self):
-        del(self._i2c)
+        try:
+            del(self._i2c)
+        except:
+            pass
 
 
     def _combineHiLo(self, hiByte, loByte):
@@ -179,6 +182,31 @@ class LSM6(object):
             raise(Exception('At least one dimension is None for one of the input vectors'))
 
         return vectorA[0] * vectorB[0] + vectorA[1] * vectorB[1] + vectorA[2] * vectorB[2]
+
+
+    def enable(self, accelerometer = True, gyro = True, autoIncrementRegisters = True):
+        # Disable accelerometer and gyro at first
+        self._writeRegister(self.CTRL1_XL, 0x00)
+        self._writeRegister(self.CTRL2_G, 0x00)
+        self._writeRegister(self.CTRL3_C, 0x00)
+
+        self._autoIncrementRegisters = False
+        self.accEnabled = False
+        self.gyroEnabled = False
+
+        if autoIcrementRegisters:
+            self._writeRegister(CTRL3_C, 0x04)
+            self._autoIncrementRegisters = True
+
+        if accelerometer:
+            # Accelerometer
+            self._writeRegister(CTRL1_XL, 0x80)
+            self.accEnabled = True
+
+        if gyro:
+            # Gyro
+            self._writeRegister(CTRL2_G, 0x80)
+            self.gyroEnabled = True
 
 
     def getSensor(self, x, y, z, mode):
@@ -274,32 +302,6 @@ class LSM6(object):
         return (xval, yval, zval)
 
 
-    def enable(self, accelerometer = True, gyro = True, autoIncrementRegisters = True):
-        # Disable accelerometer and gyro at first
-        self._writeRegister(self.CTRL1_XL, 0x00)
-        self._writeRegister(self.CTRL2_G, 0x00)
-        self._writeRegister(self.CTRL3_C, 0x00)
-
-        self._autoIncrementRegisters = False
-        self.accEnabled = False
-        self.gyroEnabled = False
-
-        if autoIcrementRegisters:
-            self._writeRegister(CTRL3_C, 0x04)
-            self._autoIncrementRegisters = True
-
-        if accelerometer:
-            # Accelerometer
-            self._writeRegister(CTRL1_XL, 0x80)
-            self.accEnabled = True
-
-        if gyro:
-            # Gyro
-            self._writeRegister(CTRL2_G, 0x80)
-            self.gyroEnabled = True
-
-
-
     def getAccelerometer(self, x = True, y = True, z = True):
         if not self.accEnabled:
             raise(Exception('Accelerometer has to be enabled first'))
@@ -322,22 +324,3 @@ class LSM6(object):
         mag = sqrt(self._vectorDot(vector, vector))
         normVector = [dimension / mag for dimension in vector]
         return tuple(normVector)
-
-
-
-
-
-
-    #uint8_t last_status; // status of last I2C transmission
-
-
-    #void setTimeout(uint16_t timeout);
-    #uint16_t getTimeout(void);
-    #bool timeoutOccurred(void);
-
-  #private:
-    #deviceType _device; // chip type
-    #uint8_t address;
-
-    #uint16_t io_timeout;
-    #bool did_timeout;
