@@ -101,12 +101,14 @@ class LSM6(object):
         zh = OUTZ_H_G,     # high byte of Z value
     )
 
-    def __init__(self, busId = 1, address = 0x6b):
+    def __init__(self, busId = 1, address = 0x6b, autoIncrement = True, timeout = 0):
         self._i2c = SMBus(busId)
         self._address = address
-        self._autoIncrementRegisters = False
+        self._autoIncrementRegisters = autoIncrement
+        self._timeout = timeout
         self.accEnabled = False
         self.gyroEnabled = False
+        self.didTimeout = False
 
 
     def __del__(self):
@@ -117,11 +119,6 @@ class LSM6(object):
         return (hiByte << 8 | loByte)
 
 
-    def _writeRegister(self, register, value):
-        valueOld = self._readRegister(register)
-        self._i2c.write_byte_data(self._address, register, value)
-
-
     def _readRegister(self, register):
         value = self._i2c.read_byte_data(self._address, register)
         return value
@@ -130,6 +127,58 @@ class LSM6(object):
     def _read(self):
         value = self._i2c.read_byte(self._address)
         return value
+
+
+    def _writeRegister(self, register, value):
+        valueOld = self._readRegister(register)
+        self._i2c.write_byte_data(self._address, register, value)
+
+
+    def _testRegister(self, register):
+        try:
+            return self._readRegister(register)
+        except:
+            return -1
+
+
+    def _timeOutOccurred(self):
+        last = self.didTimeout
+        self.didTimeout = False
+        return last
+
+
+    def _vectorCross(vectorA, vectorB):
+        try:
+            assert((len(vectorA) == 3) and (len(vectorB) == 3))
+        except AssertionError, e:
+            raise(Exception('Input vectors have to be 3-dimensional'))
+
+        try:
+            assert(val is not None for val in vectorA)
+            assert(val is not None for val in vectorB)
+        except AssertionError, e:
+            raise(Exception('At least one dimension is None for one of the input vectors'))
+
+        outX = vectorA[1] * vectorB[2] - vectorA[2] * vectorB[1]
+        outY = vectorA[2] * vectorB[0] - vectorA[0] * vectorB[2]
+        outZ = vectorA[0] * vectorB[1] - vectorA[1] * vectorB[0]
+
+        return (outX, outY, outZ)
+
+
+    def _vectorDot(vectorA, vectorB):
+        try:
+            assert((len(vectorA) == 3) and (len(vectorB) == 3))
+        except AssertionError, e:
+            raise(Exception('Input vectors have to be 3-dimensional'))
+
+        try:
+            assert(val is not None for val in vectorA)
+            assert(val is not None for val in vectorB)
+        except AssertionError, e:
+            raise(Exception('At least one dimension is None for one of the input vectors'))
+
+        return vectorA[0] * vectorB[0] + vectorA[1] * vectorB[1] + vectorA[2] * vectorB[2]
 
 
     def getSensor(self, x, y, z, mode):
@@ -269,73 +318,22 @@ class LSM6(object):
         return self.getAccelerometer(x, y, z) + self.getGyroscope(x, y, z)
 
 
-
-#void LSM6::vector_normalize(vector<float> *a)
-#{
-  #float mag = sqrt(vector_dot(a, a));
-  #a->x /= mag;
-  #a->y /= mag;
-  #a->z /= mag;
-#}
-
-#// Private Methods //////////////////////////////////////////////////////////////
-
-#int16_t LSM6::testReg(uint8_t address, regAddr reg)
-#{
-  #Wire.beginTransmission(address);
-  #Wire.write((uint8_t)reg);
-  #if (Wire.endTransmission() != 0)
-  #{
-    #return TEST_REG_ERROR;
-  #}
-
-  #Wire.requestFrom(address, (uint8_t)1);
-  #if (Wire.available())
-  #{
-    #return Wire.read();
-  #}
-  #else
-  #{
-    #return TEST_REG_ERROR;
-  #}
-#}
-
-#{
-  #public:
-    #template <typename T> struct vector
-    #{
-      #T x, y, z;
-    #};
+    def normalizeVector(self, vector):
+        mag = sqrt(self._vectorDot(vector, vector))
+        normVector = [dimension / mag for dimension in vector]
+        return tuple(normVector)
 
 
-    #vector<int16_t> a; // accelerometer readings
-    #vector<int16_t> g; // gyro readings
+
+
+
 
     #uint8_t last_status; // status of last I2C transmission
 
-    #LSM6(void);
-
-    #bool init(deviceType device = device_auto, sa0State sa0 = sa0_auto);
-    #deviceType getDeviceType(void) { return _device; }
-
-    #void enableDefault(void);
-
-
-    #void writeReg(uint8_t reg, uint8_t value);
-    #uint8_t readReg(uint8_t reg);
-
-    #void readAcc(void);
-    #void readGyro(void);
-    #void read(void);
 
     #void setTimeout(uint16_t timeout);
     #uint16_t getTimeout(void);
     #bool timeoutOccurred(void);
-
-    #// vector functions
-    #template <typename Ta, typename Tb, typename To> static void vector_cross(const vector<Ta> *a, const vector<Tb> *b, vector<To> *out);
-    #template <typename Ta, typename Tb> static float vector_dot(const vector<Ta> *a, const vector<Tb> *b);
-    #static void vector_normalize(vector<float> *a);
 
   #private:
     #deviceType _device; // chip type
@@ -343,21 +341,3 @@ class LSM6(object):
 
     #uint16_t io_timeout;
     #bool did_timeout;
-
-    #int16_t testReg(uint8_t address, regAddr reg);
-#};
-
-
-#template <typename Ta, typename Tb, typename To> void LSM6::vector_cross(const vector<Ta> *a, const vector<Tb> *b, vector<To> *out)
-#{
-  #out->x = (a->y * b->z) - (a->z * b->y);
-  #out->y = (a->z * b->x) - (a->x * b->z);
-  #out->z = (a->x * b->y) - (a->y * b->x);
-#}
-
-#template <typename Ta, typename Tb> float LSM6::vector_dot(const vector<Ta> *a, const vector<Tb> *b)
-#{
-  #return (a->x * b->x) + (a->y * b->y) + (a->z * b->z);
-#}
-
-##endif
