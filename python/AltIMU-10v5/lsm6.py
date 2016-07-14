@@ -125,7 +125,7 @@ class LSM6(object):
         if (count is None) or (count <= 1):
             return self._i2c.read_byte_data(self._address, register)
         else:
-            return self._i2c.read_i2c_block_data(self._address, register, len = count)
+            return self._i2c.read_i2c_block_data(self._address, register, count)
 
 
     def _read(self):
