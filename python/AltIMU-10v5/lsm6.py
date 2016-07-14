@@ -194,17 +194,17 @@ class LSM6(object):
         self.gyroEnabled = False
 
         if autoIncrementRegisters:
-            self._writeRegister(CTRL3_C, 0x04)
+            self._writeRegister(self.CTRL3_C, 0x04)
             self._autoIncrementRegisters = True
 
         if accelerometer:
             # Accelerometer
-            self._writeRegister(CTRL1_XL, 0x80)
+            self._writeRegister(self.CTRL1_XL, 0x80)
             self.accEnabled = True
 
         if gyro:
             # Gyro
-            self._writeRegister(CTRL2_G, 0x80)
+            self._writeRegister(self.CTRL2_G, 0x80)
             self.gyroEnabled = True
 
 
