@@ -121,9 +121,11 @@ class LSM6(object):
         return (hiByte << 8 | loByte)
 
 
-    def _readRegister(self, register):
-        value = self._i2c.read_byte_data(self._address, register)
-        return value
+    def _readRegister(self, register, count = 0):
+        if count = 0:
+            return self._i2c.read_byte_data(self._address, register)
+        else:
+            return self._i2c.read_i2c_block_data(self._address, register, len = count)
 
 
     def _read(self):
@@ -173,7 +175,8 @@ class LSM6(object):
             # this is a reasonably fast operation
 
             # TODO: Handle timeouts
-            xl = self._readRegister(registers['xl'])
+            xl = self._readRegister(registers['xl'], count = 6)
+            import pdb; pdb.set_trace()
             xh = self._read()
             yl = self._read()
             yh = self._read()
