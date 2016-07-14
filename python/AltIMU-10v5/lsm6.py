@@ -101,10 +101,9 @@ class LSM6(object):
         zh = OUTZ_H_G,     # high byte of Z value
     )
 
-    def __init__(self, busId = 1, address = 0x6b, autoIncrement = True, timeout = 0):
+    def __init__(self, busId = 1, address = 0x6b, timeout = 0):
         self._i2c = SMBus(busId)
         self._address = address
-        self._autoIncrementRegisters = autoIncrement
         self._timeout = timeout
         self.accEnabled = False
         self.gyroEnabled = False
@@ -194,7 +193,7 @@ class LSM6(object):
         self.accEnabled = False
         self.gyroEnabled = False
 
-        if autoIcrementRegisters:
+        if autoIncrementRegisters:
             self._writeRegister(CTRL3_C, 0x04)
             self._autoIncrementRegisters = True
 
