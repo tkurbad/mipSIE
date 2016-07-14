@@ -1,4 +1,5 @@
-# mipSIE mobile inverted pendulum Self-reliant Interactive Entity
+# mipSIE
+## mobile inverted pendulum Self-reliant Interactive Entity
 
 Here, I'm trying to create a mobile inverted pendulum robot.
 
