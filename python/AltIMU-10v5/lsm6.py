@@ -224,20 +224,20 @@ class LSM6(object):
         xval = yval = zval = None
 
         if x:
-            xl = self._readRegister(registers('xl'))
-            xh = self._readRegister(registers('xh'))
+            xl = self._readRegister(registers['xl'])
+            xh = self._readRegister(registers['xh'])
 
             xval = self._combineHiLo(xh, xl)
 
         if y:
-            yl = self._readRegister(registers('yl'))
-            yh = self._readRegister(registers('yh'))
+            yl = self._readRegister(registers['yl'])
+            yh = self._readRegister(registers['yh'])
 
             yval = self._combineHiLo(yh, yl)
 
         if z:
-            zl = self._readRegister(registers('zl'))
-            zh = self._readRegister(registers('zh'))
+            zl = self._readRegister(registers['zl'])
+            zh = self._readRegister(registers['zh'])
 
             zval = self._combineHiLo(zh, zl)
 
