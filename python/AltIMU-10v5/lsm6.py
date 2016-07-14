@@ -149,66 +149,7 @@ class LSM6(object):
         return last
 
 
-    def _vectorCross(vectorA, vectorB):
-        try:
-            assert((len(vectorA) == 3) and (len(vectorB) == 3))
-        except AssertionError, e:
-            raise(Exception('Input vectors have to be 3-dimensional'))
-
-        try:
-            assert(val is not None for val in vectorA)
-            assert(val is not None for val in vectorB)
-        except AssertionError, e:
-            raise(Exception('At least one dimension is None for one of the input vectors'))
-
-        outX = vectorA[1] * vectorB[2] - vectorA[2] * vectorB[1]
-        outY = vectorA[2] * vectorB[0] - vectorA[0] * vectorB[2]
-        outZ = vectorA[0] * vectorB[1] - vectorA[1] * vectorB[0]
-
-        return (outX, outY, outZ)
-
-
-    def _vectorDot(vectorA, vectorB):
-        try:
-            assert((len(vectorA) == 3) and (len(vectorB) == 3))
-        except AssertionError, e:
-            raise(Exception('Input vectors have to be 3-dimensional'))
-
-        try:
-            assert(val is not None for val in vectorA)
-            assert(val is not None for val in vectorB)
-        except AssertionError, e:
-            raise(Exception('At least one dimension is None for one of the input vectors'))
-
-        return vectorA[0] * vectorB[0] + vectorA[1] * vectorB[1] + vectorA[2] * vectorB[2]
-
-
-    def enable(self, accelerometer = True, gyro = True, autoIncrementRegisters = True):
-        # Disable accelerometer and gyro at first
-        self._writeRegister(self.CTRL1_XL, 0x00)
-        self._writeRegister(self.CTRL2_G, 0x00)
-        self._writeRegister(self.CTRL3_C, 0x00)
-
-        self._autoIncrementRegisters = False
-        self.accEnabled = False
-        self.gyroEnabled = False
-
-        if autoIncrementRegisters:
-            self._writeRegister(self.CTRL3_C, 0x04)
-            self._autoIncrementRegisters = True
-
-        if accelerometer:
-            # Accelerometer
-            self._writeRegister(self.CTRL1_XL, 0x80)
-            self.accEnabled = True
-
-        if gyro:
-            # Gyro
-            self._writeRegister(self.CTRL2_G, 0x80)
-            self.gyroEnabled = True
-
-
-    def getSensor(self, x, y, z, mode):
+    def _getSensor(self, x, y, z, mode):
 
         try:
             assert(mode in [0, 1])
@@ -299,6 +240,65 @@ class LSM6(object):
             zval = self._combineHiLo(zh, zl)
 
         return (xval, yval, zval)
+
+
+    def _vectorCross(vectorA, vectorB):
+        try:
+            assert((len(vectorA) == 3) and (len(vectorB) == 3))
+        except AssertionError, e:
+            raise(Exception('Input vectors have to be 3-dimensional'))
+
+        try:
+            assert(val is not None for val in vectorA)
+            assert(val is not None for val in vectorB)
+        except AssertionError, e:
+            raise(Exception('At least one dimension is None for one of the input vectors'))
+
+        outX = vectorA[1] * vectorB[2] - vectorA[2] * vectorB[1]
+        outY = vectorA[2] * vectorB[0] - vectorA[0] * vectorB[2]
+        outZ = vectorA[0] * vectorB[1] - vectorA[1] * vectorB[0]
+
+        return (outX, outY, outZ)
+
+
+    def _vectorDot(vectorA, vectorB):
+        try:
+            assert((len(vectorA) == 3) and (len(vectorB) == 3))
+        except AssertionError, e:
+            raise(Exception('Input vectors have to be 3-dimensional'))
+
+        try:
+            assert(val is not None for val in vectorA)
+            assert(val is not None for val in vectorB)
+        except AssertionError, e:
+            raise(Exception('At least one dimension is None for one of the input vectors'))
+
+        return vectorA[0] * vectorB[0] + vectorA[1] * vectorB[1] + vectorA[2] * vectorB[2]
+
+
+    def enable(self, accelerometer = True, gyro = True, autoIncrementRegisters = True):
+        # Disable accelerometer and gyro at first
+        self._writeRegister(self.CTRL1_XL, 0x00)
+        self._writeRegister(self.CTRL2_G, 0x00)
+        self._writeRegister(self.CTRL3_C, 0x00)
+
+        self._autoIncrementRegisters = False
+        self.accEnabled = False
+        self.gyroEnabled = False
+
+        if autoIncrementRegisters:
+            self._writeRegister(self.CTRL3_C, 0x04)
+            self._autoIncrementRegisters = True
+
+        if accelerometer:
+            # Accelerometer
+            self._writeRegister(self.CTRL1_XL, 0x80)
+            self.accEnabled = True
+
+        if gyro:
+            # Gyro
+            self._writeRegister(self.CTRL2_G, 0x80)
+            self.gyroEnabled = True
 
 
     def getAccelerometer(self, x = True, y = True, z = True):
