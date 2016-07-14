@@ -176,7 +176,6 @@ class LSM6(object):
 
             # TODO: Handle timeouts
             xl = self._readRegister(registers['xl'], count = 6)
-            import pdb; pdb.set_trace()
             xh = self._read()
             yl = self._read()
             yh = self._read()
@@ -241,6 +240,8 @@ class LSM6(object):
             zh = self._readRegister(registers('zh'))
 
             zval = self._combineHiLo(zh, zl)
+
+        import pdb; pdb.set_trace()
 
         return (xval, yval, zval)
 
