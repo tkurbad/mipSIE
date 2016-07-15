@@ -101,13 +101,11 @@ class LSM6(object):
         zh = OUTZ_H_G,     # high byte of Z value
     )
 
-    def __init__(self, busId = 1, address = 0x6b, timeout = 0):
+    def __init__(self, busId = 1, address = 0x6b):
         self._i2c = SMBus(busId)
         self._address = address
-        self._timeout = timeout
         self.accEnabled = False
         self.gyroEnabled = False
-        self.didTimeout = False
 
 
     def __del__(self):
@@ -123,7 +121,8 @@ class LSM6(object):
 
 
     def _combineHiLo(self, hiByte, loByte):
-        return (hiByte << 8 | loByte)
+        combined = (loByte | hiByte << 8)
+        return combined if combined < 32768 else (combined - 65536)
 
 
     def _readRegister(self, register, count = None):
@@ -131,7 +130,6 @@ class LSM6(object):
             return self._i2c.read_byte_data(self._address, register)
         else:
             return self._i2c.read_i2c_block_data(self._address, register, count)
-
 
 
     def _read(self):
@@ -149,12 +147,6 @@ class LSM6(object):
             return self._readRegister(register)
         except:
             return -1
-
-
-    def _timeOutOccurred(self):
-        last = self.didTimeout
-        self.didTimeout = False
-        return last
 
 
     def _getSensor(self, x, y, z, mode):
@@ -179,8 +171,6 @@ class LSM6(object):
 
             # In any other case we read all the values first, because
             # this is a reasonably fast operation
-
-            # TODO: Handle timeouts
             [xl, xh, yl, yh, zl, zh] = self._readRegister(registers['xl'], count = 6)
 
             # The permutations are listed canonically to provide maximum
