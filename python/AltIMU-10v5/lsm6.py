@@ -242,7 +242,7 @@ class LSM6(object):
 
         # Generic
         # Disable FIFO
-        self._writeRegister(self.FIFO_CTRL5, 0x46)
+        self._writeRegister(self.FIFO_CTRL5, 0x00)
         # Output not updated until MSB and LSB are read
         # 01000000b
         self._writeRegister(self.CTRL3_C, 0x40)
