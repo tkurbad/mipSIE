@@ -175,12 +175,7 @@ class LSM6(object):
             # this is a reasonably fast operation
 
             # TODO: Handle timeouts
-            xl = self._readRegister(registers['xl'], count = 6)
-            xh = self._read()
-            yl = self._read()
-            yh = self._read()
-            zl = self._read()
-            zh = self._read()
+            [xl, xh, yl, yh, zl, zh] = self._readRegister(registers['xl'], count = 6)
 
             # The permutations are listed canonically to provide maximum
             # performance
