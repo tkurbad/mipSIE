@@ -8,5 +8,5 @@ imu = LSM6()
 imu.enable()
 
 while True:
-    print imu.getAccelerometer()
+    print imu.getAll()
     sleep(0.1)
