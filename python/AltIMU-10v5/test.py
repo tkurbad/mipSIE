@@ -5,8 +5,8 @@ from time import sleep
 from lsm6 import LSM6
 
 imu = LSM6()
-imu.enable(autoIncrementRegisters = False)
+imu.enable(autoIncrementRegisters = True)
 
 while True:
-    print imu.getAll()
+    print imu.getGyroscope()
     sleep(0.1)
