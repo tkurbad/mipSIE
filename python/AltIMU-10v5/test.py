@@ -2,11 +2,11 @@
 
 from time import sleep
 
-from lsm6 import LSM6
+from lsm6ds33 import LSM6DS33
 
-imu = LSM6()
+imu = LSM6DS33()
 imu.enable()
 
 while True:
-    print imu.getAll()
+    print imu.getAllRaw()
     sleep(0.1)
