@@ -112,6 +112,11 @@ class LSM6(object):
 
     def __del__(self):
         try:
+            # Power down accelerometer
+            self._writeRegister(self.CTRL1_XL, 0x00)
+            # Power down gyroscope
+            self._writeRegister(self.CTRL2_G, 0x00)
+            # Remove SMBus connection
             del(self._i2c)
         except:
             pass
@@ -126,6 +131,7 @@ class LSM6(object):
             return self._i2c.read_byte_data(self._address, register)
         else:
             return self._i2c.read_i2c_block_data(self._address, register, count)
+
 
 
     def _read(self):
@@ -283,19 +289,35 @@ class LSM6(object):
         self.accEnabled = False
         self.gyroEnabled = False
 
-        if autoIncrementRegisters:
-            self._writeRegister(self.CTRL3_C, 0x04)
-            self._autoIncrementRegisters = True
+        # Disable FIFO
+        self._writeRegister(self.FIFO_CTRL5, 0x00)
+
+        # Prepare value for CTRL3_C register
+        # Output not updated until MSB and LSB are read
+        # 01000000b
+        ctrl3_c = 0x40
 
         if accelerometer:
             # Accelerometer
-            self._writeRegister(self.CTRL1_XL, 0x80)
+            # 1.66 kHz / +/- 4g
+            # 10001000b
+            self._writeRegister(self.CTRL1_XL, 0x88)
             self.accEnabled = True
 
         if gyro:
             # Gyro
+            # 1.66 kHz / 245 dps
+            # 10000000b
             self._writeRegister(self.CTRL2_G, 0x80)
             self.gyroEnabled = True
+
+        if autoIncrementRegisters:
+            # Auto increment register address during read
+            # 00000100b
+            ctrl3_c = ctrl3_c + 0x04
+            self._autoIncrementRegisters = True
+
+        self._writeRegister(self.CTRL3_C, ctrl3_c)
 
 
     def getAccelerometer(self, x = True, y = True, z = True):
