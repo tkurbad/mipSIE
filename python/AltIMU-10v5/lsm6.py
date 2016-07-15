@@ -101,13 +101,11 @@ class LSM6(object):
         zh = OUTZ_H_G,     # high byte of Z value
     )
 
-    def __init__(self, busId = 1, address = 0x6b, timeout = 0):
+    def __init__(self, busId = 1, address = 0x6b):
         self._i2c = SMBus(busId)
         self._address = address
-        self._timeout = timeout
         self.accEnabled = False
         self.gyroEnabled = False
-        self.didTimeout = False
 
 
     def __del__(self):
@@ -123,15 +121,12 @@ class LSM6(object):
 
 
     def _combineHiLo(self, hiByte, loByte):
-        return (hiByte << 8 | loByte)
+        combined = (loByte | hiByte << 8)
+        return combined if combined < 32768 else (combined - 65536)
 
 
-    def _readRegister(self, register, count = None):
-        if (count is None) or (count <= 1):
-            return self._i2c.read_byte_data(self._address, register)
-        else:
-            return self._i2c.read_i2c_block_data(self._address, register, count)
-
+    def _readRegister(self, register):
+        return self._i2c.read_byte_data(self._address, register)
 
 
     def _read(self):
@@ -151,12 +146,6 @@ class LSM6(object):
             return -1
 
 
-    def _timeOutOccurred(self):
-        last = self.didTimeout
-        self.didTimeout = False
-        return last
-
-
     def _getSensor(self, x, y, z, mode):
 
         try:
@@ -171,57 +160,6 @@ class LSM6(object):
             # Gyroscope
             registers = self.gyroRegisters
 
-        if self._autoIncrementRegisters:
-            if (not x and not y and not z):
-                # In case none of the values is requested, we can make
-                # a quick turnaround
-                return (None, None, None)
-
-            # In any other case we read all the values first, because
-            # this is a reasonably fast operation
-
-            # TODO: Handle timeouts
-            [xl, xh, yl, yh, zl, zh] = self._readRegister(registers['xl'], count = 6)
-
-            # The permutations are listed canonically to provide maximum
-            # performance
-            if (x and y and z):
-                return(self._combineHiLo(xh, xl),
-                       self._combineHiLo(yh, yl),
-                       self._combineHiLo(zh, zl))
-
-            if (x and y and not z):
-                return(self._combineHiLo(xh, xl),
-                       self._combineHiLo(yh, yl),
-                       None)
-
-            if (x and not y and z):
-                return(self._combineHiLo(xh, xl),
-                       None,
-                       self._combineHiLo(zh, zl))
-
-            if (not x and y and z):
-                return(None,
-                       self._combineHiLo(yh, yl),
-                       self._combineHiLo(zh, zl))
-
-            if (x and not y and not z):
-                return(self._combineHiLo(xh, xl),
-                       None,
-                       None)
-
-            if (not x and y and not z):
-                return(None,
-                       self._combineHiLo(yh, yl),
-                       None)
-
-            if (not x and not y and z):
-                return(None,
-                       None,
-                       self._combineHiLo(zh, zl))
-
-
-        # Auto increment of registers is not enabled
         xval = yval = zval = None
 
         if x:
@@ -279,23 +217,14 @@ class LSM6(object):
         return vectorA[0] * vectorB[0] + vectorA[1] * vectorB[1] + vectorA[2] * vectorB[2]
 
 
-    def enable(self, accelerometer = True, gyro = True, autoIncrementRegisters = True):
+    def enable(self, accelerometer = True, gyro = True):
         # Disable accelerometer and gyro at first
         self._writeRegister(self.CTRL1_XL, 0x00)
         self._writeRegister(self.CTRL2_G, 0x00)
         self._writeRegister(self.CTRL3_C, 0x00)
 
-        self._autoIncrementRegisters = False
         self.accEnabled = False
         self.gyroEnabled = False
-
-        # Disable FIFO
-        self._writeRegister(self.FIFO_CTRL5, 0x00)
-
-        # Prepare value for CTRL3_C register
-        # Output not updated until MSB and LSB are read
-        # 01000000b
-        ctrl3_c = 0x40
 
         if accelerometer:
             # Accelerometer
@@ -311,13 +240,12 @@ class LSM6(object):
             self._writeRegister(self.CTRL2_G, 0x80)
             self.gyroEnabled = True
 
-        if autoIncrementRegisters:
-            # Auto increment register address during read
-            # 00000100b
-            ctrl3_c = ctrl3_c + 0x04
-            self._autoIncrementRegisters = True
-
-        self._writeRegister(self.CTRL3_C, ctrl3_c)
+        # Generic
+        # Disable FIFO
+        self._writeRegister(self.FIFO_CTRL5, 0x00)
+        # Output not updated until MSB and LSB are read
+        # 01000000b
+        self._writeRegister(self.CTRL3_C, 0x40)
 
 
     def getAccelerometer(self, x = True, y = True, z = True):
