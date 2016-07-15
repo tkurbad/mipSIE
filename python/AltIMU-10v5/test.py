@@ -5,7 +5,7 @@ from time import sleep
 from lsm6 import LSM6
 
 imu = LSM6()
-imu.enable()
+imu.enable(autoIncrementRegisters = True)
 
 while True:
     print imu.getAccelerometer()
