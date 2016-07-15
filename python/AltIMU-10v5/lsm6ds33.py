@@ -434,9 +434,10 @@ class LSM6DS33(object):
 
 
     def getTemperatureCelsius(self):
-        """ Return the temperature sensor reading in °C. """
+        """ Return the temperature sensor reading in C. """
         # According to the datasheet, the raw temperature value is 0
-        # @ 25°C and the resolution of the sensor is 16 steps per °C.
+        # @ 25 degrees Celsius and the resolution of the sensor is 16
+        # steps per degree Celsius.
         # Thus, the following statement should return the temperature in
         # degrees Celsius.
         return 25 + self.getTemperatureRaw() / 16
