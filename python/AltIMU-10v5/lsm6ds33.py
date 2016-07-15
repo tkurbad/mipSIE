@@ -433,18 +433,6 @@ class LSM6DS33(object):
         return self._combineLoHi(tl, th)
 
 
-    def getTemperatureCelsius(self):
-        """ Return the temperature sensor reading in C as a floating
-            point number rounded to one decimal place.
-        """
-        # According to the datasheet, the raw temperature value is 0
-        # @ 25 degrees Celsius and the resolution of the sensor is 16
-        # steps per degree Celsius.
-        # Thus, the following statement should return the temperature in
-        # degrees Celsius.
-        return round(25.0 + self.getTemperatureRaw() / 16.0, 1)
-
-
     def getIMURaw(self, x = True, y = True, z = True):
         """ Return a 6-tuple of the raw output values of both IMU
             sensors, accelerometer and gyroscope.
@@ -460,6 +448,18 @@ class LSM6DS33(object):
         return self.getAccelerometerRaw(x, y, z) \
                 + self.getGyroscopeRaw(x, y, z) \
                 + (self.getTemperatureRaw(), )
+
+
+    def getTemperatureCelsius(self):
+        """ Return the temperature sensor reading in C as a floating
+            point number rounded to one decimal place.
+        """
+        # According to the datasheet, the raw temperature value is 0
+        # @ 25 degrees Celsius and the resolution of the sensor is 16
+        # steps per degree Celsius.
+        # Thus, the following statement should return the temperature in
+        # degrees Celsius.
+        return round(25.0 + self.getTemperatureRaw() / 16.0, 1)
 
 
     def normalizeVector(self, vector):
