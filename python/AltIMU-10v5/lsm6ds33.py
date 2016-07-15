@@ -434,13 +434,15 @@ class LSM6DS33(object):
 
 
     def getTemperatureCelsius(self):
-        """ Return the temperature sensor reading in C. """
+        """ Return the temperature sensor reading in C as a floating
+            point number rounded to one decimal place.
+        """
         # According to the datasheet, the raw temperature value is 0
         # @ 25 degrees Celsius and the resolution of the sensor is 16
         # steps per degree Celsius.
         # Thus, the following statement should return the temperature in
         # degrees Celsius.
-        return 25 + self.getTemperatureRaw() / 16
+        return round(25.0 + self.getTemperatureRaw() / 16.0, 1)
 
 
     def getIMURaw(self, x = True, y = True, z = True):
