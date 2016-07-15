@@ -433,6 +433,15 @@ class LSM6DS33(object):
         return self._combineLoHi(tl, th)
 
 
+    def getTemperatureCelsius(self):
+        """ Return the temperature sensor reading in °C. """
+        # According to the datasheet, the raw temperature value is 0
+        # @ 25°C and the resolution of the sensor is 16 steps per °C.
+        # Thus, the following statement should return the temperature in
+        # degrees Celsius.
+        return 25 + self.getTemperatureRaw() / 16
+
+
     def getIMURaw(self, x = True, y = True, z = True):
         """ Return a 6-tuple of the raw output values of both IMU
             sensors, accelerometer and gyroscope.

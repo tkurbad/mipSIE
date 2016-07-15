@@ -8,5 +8,5 @@ imu = LSM6DS33()
 imu.enable()
 
 while True:
-    print imu.getAllRaw()
+    print imu.getTemperatureCelsius()
     sleep(0.1)
