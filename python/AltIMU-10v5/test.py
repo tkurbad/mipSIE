@@ -8,5 +8,5 @@ imu = LSM6()
 imu.enable(autoIncrementRegisters = True)
 
 while True:
-    print imu.getGyroscope()
+    print imu.getAccelerometer()
     sleep(0.1)
