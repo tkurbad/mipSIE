@@ -22,10 +22,11 @@
 ########################################################################
 
 # Imports
-from smbus import SMBus
+from i2c import I2C
+
 
 # Code
-class LIS3MDL(object):
+class LIS3MDL(I2C):
     """ Class to set up and access LIS3MDL magnetometer.
     """
 
@@ -87,8 +88,7 @@ class LIS3MDL(object):
         """ Initialize the I2C bus and store device slave address.
             Set initial sensor activation flags to False.
         """
-        self._i2c = SMBus(busId)
-        self._address = address
+        super(LIS3MDL, self).__init__(busId, address)
         self._autoIncrementRegisters = False
         self.magEnabled = False
         self.tempEnabled = False
@@ -99,71 +99,17 @@ class LIS3MDL(object):
         try:
             # Power down magnetometer
             self._writeRegister(self.CTRL_REG3, 0x03)
-            # Remove SMBus connection
-            del(self._i2c)
+            super(LIS3MDL, self).__del__()
         except:
             pass
-
-
-    def _combineLoHi(self, loByte, hiByte):
-        """ Combine high and low bytes to a signed 16 bit value. """
-        combined = (loByte | hiByte << 8)
-        return combined if combined < 32768 else (combined - 65536)
-
-
-    def _readRegister(self, register, count = None):
-        """ Read I2C register(s).
-            If count is a positive integer, do 'count' consecutive
-            readings. If auto increment of register addresses is enabled
-            for the device, the values of up to count = 32 consecutive
-            registers can be read in one call.
-        """
-        if (count is None) or (count <= 1):
-            # A single value has been requested
-            return self._i2c.read_byte_data(self._address, register)
-        else:
-            # Read 'count' consecutive bytes, i.e. to read the output
-            # of several registers at once
-            return self._i2c.read_i2c_block_data(self._address, register, count)
-
-
-    def _read(self):
-        """ Read a single byte from the I2C device without specifying a
-            register.
-        """
-        return self._i2c.read_byte(self._address)
-
-
-    def _writeRegister(self, register, value):
-        """ Write a single byte to a I2C register. Return the value the
-            register had before the write.
-        """
-        valueOld = self._readRegister(register)
-        self._i2c.write_byte_data(self._address, register, value)
-        return valueOld
-
-
-    def _write(self, value):
-        """ Write a single byte to the I2C device without specifying a
-            register.
-        """
-        return self._i2c.write_byte(self._address, value)
-
-
-    def _testRegister(self, register):
-        """ Check, if a I2C register is readable/accessible. """
-        try:
-            return self._readRegister(register)
-        except:
-            return -1
 
 
     ## Public methods
     def enable(self, magnetometer = True, temperature = True,
                autoIncrementRegisters = True):
-        """ Enable and set up the given sensors in the IMU device and
-            determine whether to auto increment registers during I2C
-            read operations.
+        """ Enable and set up the given sensors in the magnetometer
+            device and determine whether to auto increment registers
+            during I2C read operations.
         """
         # Disable magnetometer and temperature sensor first
         self._writeRegister(self.CTRL_REG1, 0x00)
@@ -248,9 +194,9 @@ class LIS3MDL(object):
             # In the return step we assess the requested vector
             # dimensions and return None for the ones that weren't
             # requested.
-            return (self._combineLoHi(xl, xh) if x else None,
-                    self._combineLoHi(yl, yh) if y else None,
-                    self._combineLoHi(zl, zh) if z else None,)
+            return (self._combineSignedLoHi(xl, xh) if x else None,
+                    self._combineSignedLoHi(yl, yh) if y else None,
+                    self._combineSignedLoHi(zl, zh) if z else None,)
 
         ## In case auto increment of registers is not enabled we have to
         #  read all registers consecutively.
@@ -264,19 +210,19 @@ class LIS3MDL(object):
             xl = self._readRegister(self.magRegisters['xl'])
             xh = self._readRegister(self.magRegisters['xh'])
 
-            xVal = self._combineLoHi(xl, xh)
+            xVal = self._combineSignedLoHi(xl, xh)
 
         if y:
             yl = self._readRegister(self.magRegisters['yl'])
             yh = self._readRegister(self.magRegisters['yh'])
 
-            yVal = self._combineLoHi(yl, yh)
+            yVal = self._combineSignedLoHi(yl, yh)
 
         if z:
             zl = self._readRegister(self.magRegisters['zl'])
             zh = self._readRegister(self.magRegisters['zh'])
 
-            zVal = self._combineLoHi(zl, zh)
+            zVal = self._combineSignedLoHi(zl, zh)
 
         # Return the vector
         return (xVal, yVal, zVal)
@@ -293,7 +239,7 @@ class LIS3MDL(object):
         th = self._readRegister(self.tempRegisters['th'])
 
         # Return combined result
-        return self._combineLoHi(tl, th)
+        return self._combineSignedLoHi(tl, th)
 
 
     def getAllRaw(self, x = True, y = True, z = True):

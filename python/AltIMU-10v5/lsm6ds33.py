@@ -22,10 +22,11 @@
 ########################################################################
 
 # Imports
-from smbus import SMBus
+from i2c import I2C
+
 
 # Code
-class LSM6DS33(object):
+class LSM6DS33(I2C):
     """ Class to set up and access LSM6DS33 accelerometer and gyroscope.
     """
 
@@ -148,8 +149,7 @@ class LSM6DS33(object):
         """ Initialize the I2C bus and store device slave address.
             Set initial sensor activation flags to False.
         """
-        self._i2c = SMBus(busId)
-        self._address = address
+        super(LSM6DS33, self).__init__(busId, address)
         self._autoIncrementRegisters = False
         self._ready = False
         self.accEnabled = False
@@ -163,56 +163,9 @@ class LSM6DS33(object):
             self._writeRegister(self.CTRL1_XL, 0x00)
             # Power down gyroscope
             self._writeRegister(self.CTRL2_G, 0x00)
-            # Remove SMBus connection
-            del(self._i2c)
+            super(LSM6DS33, self).__del__()
         except:
             pass
-
-
-    def _combineLoHi(self, loByte, hiByte):
-        """ Combine high and low bytes to a signed 16 bit value. """
-        combined = (loByte | hiByte << 8)
-        return combined if combined < 32768 else (combined - 65536)
-
-
-    def _readRegister(self, register, count = None):
-        """ Read I2C register(s).
-            If count is a positive integer, do 'count' consecutive
-            readings. If auto increment of register addresses is enabled
-            for the device, the values of up to count = 32 consecutive
-            registers can be read in one call.
-        """
-        if (count is None) or (count <= 1):
-            # A single value has been requested
-            return self._i2c.read_byte_data(self._address, register)
-        else:
-            # Read 'count' consecutive bytes, i.e. to read the output
-            # of several registers at once
-            return self._i2c.read_i2c_block_data(self._address, register, count)
-
-
-    def _read(self):
-        """ Read a single byte from the I2C device without specifying a
-            register.
-        """
-        return self._i2c.read_byte(self._address)
-
-
-    def _writeRegister(self, register, value):
-        """ Write a single byte to a I2C register. Return the value the
-            register had before the write.
-        """
-        valueOld = self._readRegister(register)
-        self._i2c.write_byte_data(self._address, register, value)
-        return valueOld
-
-
-    def _testRegister(self, register):
-        """ Check, if a I2C register is readable/accessible. """
-        try:
-            return self._readRegister(register)
-        except:
-            return -1
 
 
     def _getIMUSensorRaw(self, x, y, z, mode):
@@ -251,9 +204,9 @@ class LSM6DS33(object):
             # In the return step we assess the requested vector
             # dimensions and return None for the ones that weren't
             # requested.
-            return (self._combineLoHi(xl, xh) if x else None,
-                    self._combineLoHi(yl, yh) if y else None,
-                    self._combineLoHi(zl, zh) if z else None,)
+            return (self._combineSignedLoHi(xl, xh) if x else None,
+                    self._combineSignedLoHi(yl, yh) if y else None,
+                    self._combineSignedLoHi(zl, zh) if z else None,)
 
         ## In case auto increment of registers is not enabled we have to
         #  read all registers consecutively.
@@ -267,19 +220,19 @@ class LSM6DS33(object):
             xl = self._readRegister(registers['xl'])
             xh = self._readRegister(registers['xh'])
 
-            xVal = self._combineLoHi(xl, xh)
+            xVal = self._combineSignedLoHi(xl, xh)
 
         if y:
             yl = self._readRegister(registers['yl'])
             yh = self._readRegister(registers['yh'])
 
-            yVal = self._combineLoHi(yl, yh)
+            yVal = self._combineSignedLoHi(yl, yh)
 
         if z:
             zl = self._readRegister(registers['zl'])
             zh = self._readRegister(registers['zh'])
 
-            zVal = self._combineLoHi(zl, zh)
+            zVal = self._combineSignedLoHi(zl, zh)
 
         # Return the vector
         return (xVal, yVal, zVal)
@@ -387,7 +340,7 @@ class LSM6DS33(object):
         th = self._readRegister(self.tempRegisters['th'])
 
         # Return combined result
-        return self._combineLoHi(tl, th)
+        return self._combineSignedLoHi(tl, th)
 
 
     def getIMURaw(self, x = True, y = True, z = True):
