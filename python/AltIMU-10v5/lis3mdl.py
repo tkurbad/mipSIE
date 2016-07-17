@@ -25,8 +25,8 @@
 from smbus import SMBus
 
 # Code
-class LISM3MDL(object):
-    """ Class to set up and access LISM3MDL magnetometer.
+class LIS3MDL(object):
+    """ Class to set up and access LIS3MDL magnetometer.
     """
 
     ##
