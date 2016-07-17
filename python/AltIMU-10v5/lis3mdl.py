@@ -193,7 +193,7 @@ class LIS3MDL(object):
 
             self.magEnabled = True
 
-        if temp:
+        if temperature:
             # Temperature sensor enabled
             # 10000000b
             ctrl_reg1 += 0x80
