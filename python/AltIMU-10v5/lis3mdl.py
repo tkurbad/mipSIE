@@ -173,9 +173,6 @@ class LIS3MDL(object):
         # Initial value for CTRL_REG1
         ctrl_reg1 = 0x00
 
-
-  }
-}
         if magnetometer:
             # Magnetometer
 
