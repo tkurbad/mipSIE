@@ -1,16 +1,16 @@
 #!/usr/bin/python
 
-## Python library module for STM LSM6DS33 accelerometer and gyroscope ##
+### Python library module for ST LSM6DS33 accelerometer and gyroscope ##
 #
 # This module enables the Raspberry PI embedded computer to set up the
-# STM LSM6DS33 integrated accelerometer, gyroscope and temperature MEMS.
+# ST LSM6DS33 integrated accelerometer, gyroscope and temperature MEMS.
 #
-# The STM LSM6DS33 is an integral part of Pololu's AltIMU-10v5 and
+# The ST LSM6DS33 is an integral part of Pololu's AltIMU-10v5 and
 # MinIMU-9v5 Inertial Measurement Units (IMUs).
 # [https://www.pololu.com/product/2739]
 # [https://www.pololu.com/product/2738]
 #
-# The datasheet for the STM LSM6DS33 is available at
+# The datasheet for the ST LSM6DS33 is available at
 # [https://www.pololu.com/file/download/LSM6DS33.pdf?file_id=0J1087]
 #
 # This Python code was initially derived from Pololu's own C++ Arduino
