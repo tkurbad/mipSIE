@@ -7,11 +7,9 @@ from lis3mdl import LIS3MDL
 
 imu = LSM6DS33()
 imu.enable()
-print imu._i2c
 
 magnet = LIS3MDL()
 magnet.enable()
-print magnet._i2c
 
 while True:
     print imu.getTemperatureCelsius()

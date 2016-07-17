@@ -332,7 +332,7 @@ class LSM6DS33(I2C):
             [tl, th] = self._readRegister(self.tempRegisters['tl'], count = 2)
 
             # Return combined result
-            return self._combineLoHi(tl, th)
+            return self._combineSignedLoHi(tl, th)
 
         # If register auto increment is disabled, read temperature bytes
         # discretely
