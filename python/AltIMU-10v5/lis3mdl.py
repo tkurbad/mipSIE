@@ -1,16 +1,16 @@
 #!/usr/bin/python
 
-########## Python library module for STM LIS3MDL magnetometer ##########
+########### Python library module for ST LIS3MDL magnetometer ##########
 #
 # This module enables the Raspberry PI embedded computer to set up the
-# STM LIS3MDL digital magnetometer.
+# ST LIS3MDL digital magnetometer.
 #
-# The STM LIS3MDL is an integral part of Pololu's AltIMU-10v5 and
+# The ST LIS3MDL is an integral part of Pololu's AltIMU-10v5 and
 # MinIMU-9v5 Inertial Measurement Units (IMUs).
 # [https://www.pololu.com/product/2739]
 # [https://www.pololu.com/product/2738]
 #
-# The datasheet for the STM LIS3MDL is available at
+# The datasheet for the ST LIS3MDL is available at
 # [https://www.pololu.com/file/download/LIS3MDL.pdf?file_id=0J1089]
 #
 # This Python code was initially derived from Pololu's own C++ Arduino
@@ -90,8 +90,8 @@ class LIS3MDL(object):
         self._i2c = SMBus(busId)
         self._address = address
         self._autoIncrementRegisters = False
-        self.tempEnabled = False
         self.magEnabled = False
+        self.tempEnabled = False
 
 
     def __del__(self):
