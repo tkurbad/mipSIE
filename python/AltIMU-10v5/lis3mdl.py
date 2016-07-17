@@ -35,31 +35,31 @@ class LIS3MDL(object):
 
     # Register addresses
     #  ([+] = used in the code, [-] = not used or useful, [ ] = TBD)
-    WHO_AM_I    = 0x0f,  # [-] Returns 0x3d (read only)
+    WHO_AM_I    = 0x0F   # [-] Returns 0x3d (read only)
 
-    CTRL_REG1   = 0x20,  # [+] Control register to enable device, set
+    CTRL_REG1   = 0x20   # [+] Control register to enable device, set
                          #     operating modes and rates for X and Y axes
-    CTRL_REG2   = 0x21,  # [+] Set gauss scale
-    CTRL_REG3   = 0x22,  # [+] Set operating/power modes
-    CTRL_REG4   = 0x23,  # [+] Set operating mode and rate for Z-axis
-    CTRL_REG5   = 0x24,  # [ ] Set fast read, block data update modes
+    CTRL_REG2   = 0x21   # [+] Set gauss scale
+    CTRL_REG3   = 0x22   # [+] Set operating/power modes
+    CTRL_REG4   = 0x23   # [+] Set operating mode and rate for Z-axis
+    CTRL_REG5   = 0x24   # [ ] Set fast read, block data update modes
 
-    STATUS_REG  = 0x27,  # [ ] Read device status (Is new data available?)
+    STATUS_REG  = 0x27   # [ ] Read device status (Is new data available?)
 
-    OUT_X_L     = 0x28,  # [+] X output, low byte
-    OUT_X_H     = 0x29,  # [+] X output, high byte
-    OUT_Y_L     = 0x2a,  # [+] Y output, low byte
-    OUT_Y_H     = 0x2b,  # [+] Y output, high byte
-    OUT_Z_L     = 0x2c,  # [+] Z output, low byte
-    OUT_Z_H     = 0x2d,  # [+] Z output, high byte
+    OUT_X_L     = 0x28   # [+] X output, low byte
+    OUT_X_H     = 0x29   # [+] X output, high byte
+    OUT_Y_L     = 0x2A   # [+] Y output, low byte
+    OUT_Y_H     = 0x2B   # [+] Y output, high byte
+    OUT_Z_L     = 0x2C   # [+] Z output, low byte
+    OUT_Z_H     = 0x2D   # [+] Z output, high byte
 
-    TEMP_OUT_L  = 0x2e,  # [+] Temperature output, low byte
-    TEMP_OUT_H  = 0x2f,  # [+] Temperature output, high byte
+    TEMP_OUT_L  = 0x2E   # [+] Temperature output, low byte
+    TEMP_OUT_H  = 0x2F   # [+] Temperature output, high byte
 
-    INT_CFG     = 0x30,  # [-] Interrupt generation config
-    INT_SRC     = 0x31,  # [-] Interrupt sources config
-    INT_THS_L   = 0x32,  # [-] Interrupt threshold, low byte
-    INT_THS_H   = 0x33,  # [-] Interrupt threshold, high byte
+    INT_CFG     = 0x30   # [-] Interrupt generation config
+    INT_SRC     = 0x31   # [-] Interrupt sources config
+    INT_THS_L   = 0x32   # [-] Interrupt threshold, low byte
+    INT_THS_H   = 0x33   # [-] Interrupt threshold, high byte
 
     # Output registers used by the magnetometer
     magRegisters = dict (
@@ -120,7 +120,6 @@ class LIS3MDL(object):
         """
         if (count is None) or (count <= 1):
             # A single value has been requested
-            import pdb; pdb.set_trace()
             return self._i2c.read_byte_data(self._address, register)
         else:
             # Read 'count' consecutive bytes, i.e. to read the output
