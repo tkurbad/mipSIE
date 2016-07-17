@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-#### Python library module for LSM6DS33 accelerometer and gyroscope ####
+## Python library module for STM LSM6DS33 accelerometer and gyroscope ##
 #
 # This module enables the Raspberry PI embedded computer to set up the
 # STM LSM6DS33 integrated accelerometer, gyroscope and temperature MEMS.
@@ -114,28 +114,28 @@ class LSM6DS33(object):
 
     # Output registers used by the accelerometer
     accRegisters = dict (
-        xl = OUTX_L_XL,     # low byte of X value
-        xh = OUTX_H_XL,     # high byte of X value
-        yl = OUTY_L_XL,     # low byte of Y value
-        yh = OUTY_H_XL,     # high byte of Y value
-        zl = OUTZ_L_XL,     # low byte of Z value
-        zh = OUTZ_H_XL,     # high byte of Z value
+        xl = OUTX_L_XL,       # low byte of X value
+        xh = OUTX_H_XL,       # high byte of X value
+        yl = OUTY_L_XL,       # low byte of Y value
+        yh = OUTY_H_XL,       # high byte of Y value
+        zl = OUTZ_L_XL,       # low byte of Z value
+        zh = OUTZ_H_XL,       # high byte of Z value
     )
 
     # Output registers used by the gyroscope
     gyroRegisters = dict (
-        xl = OUTX_L_G,     # low byte of X value
-        xh = OUTX_H_G,     # high byte of X value
-        yl = OUTY_L_G,     # low byte of Y value
-        yh = OUTY_H_G,     # high byte of Y value
-        zl = OUTZ_L_G,     # low byte of Z value
-        zh = OUTZ_H_G,     # high byte of Z value
+        xl = OUTX_L_G,       # low byte of X value
+        xh = OUTX_H_G,       # high byte of X value
+        yl = OUTY_L_G,       # low byte of Y value
+        yh = OUTY_H_G,       # high byte of Y value
+        zl = OUTZ_L_G,       # low byte of Z value
+        zh = OUTZ_H_G,       # high byte of Z value
     )
 
     # Output registers used by the temperature sensor
     tempRegisters = dict (
-        tl = OUT_TEMP_L,   # low byte of temperature value
-        th = OUT_TEMP_H,   # high byte of temperature value
+        tl = OUT_TEMP_L,     # low byte of temperature value
+        th = OUT_TEMP_H,     # high byte of temperature value
     )
 
 
@@ -285,49 +285,6 @@ class LSM6DS33(object):
         return (xval, yval, zval)
 
 
-    def _vectorCross(vectorA, vectorB):
-        """ Calculate vector cross product for a 3-dimensional vector.
-        """
-        try:
-            # Check if input vectors are 3-dimensional
-            assert((len(vectorA) == 3) and (len(vectorB) == 3))
-        except AssertionError, e:
-            raise(Exception('Input vectors have to be 3-dimensional'))
-
-        try:
-            # Check if all vector dimensions are set
-            assert((dimension is not None) and isinstance(dimension, (int, long, float)) for dimension in vectorA)
-            assert((dimension is not None) and isinstance(dimension, (int, long, float)) for dimension in vectorB)
-        except AssertionError, e:
-            raise(Exception('At least one dimension is not a number for one of the input vectors'))
-
-        # Calculate and return cross product
-        outX = vectorA[1] * vectorB[2] - vectorA[2] * vectorB[1]
-        outY = vectorA[2] * vectorB[0] - vectorA[0] * vectorB[2]
-        outZ = vectorA[0] * vectorB[1] - vectorA[1] * vectorB[0]
-
-        return (outX, outY, outZ)
-
-
-    def _vectorDot(vectorA, vectorB):
-        """ Calculate vector dot product for a 3-dimensional vector. """
-        try:
-            # Check if input vectors are 3-dimensional
-            assert((len(vectorA) == 3) and (len(vectorB) == 3))
-        except AssertionError, e:
-            raise(Exception('Input vectors have to be 3-dimensional'))
-
-        try:
-            # Check if all vector dimensions are set
-            assert((dimension is not None) and isinstance(dimension, (int, long, float)) for dimension in vectorA)
-            assert((dimension is not None) and isinstance(dimension, (int, long, float)) for dimension in vectorB)
-        except AssertionError, e:
-            raise(Exception('At least one dimension is not a number for one of the input vectors'))
-
-        # Calculate and return dot product
-        return vectorA[0] * vectorB[0] + vectorA[1] * vectorB[1] + vectorA[2] * vectorB[2]
-
-
     ## Public methods
     def enable(self, accelerometer = True, gyro = True,
                autoIncrementRegisters = True):
@@ -335,7 +292,7 @@ class LSM6DS33(object):
             determine whether to auto increment registers during I2C
             read operations.
         """
-        # Disable accelerometer and gyroscope at first
+        # Disable accelerometer and gyroscope first
         self._writeRegister(self.CTRL1_XL, 0x00)
         self._writeRegister(self.CTRL2_G, 0x00)
         self._writeRegister(self.CTRL3_C, 0x00)
@@ -460,10 +417,3 @@ class LSM6DS33(object):
         # Thus, the following statement should return the temperature in
         # degrees Celsius.
         return round(25.0 + self.getTemperatureRaw() / 16.0, 1)
-
-
-    def normalizeVector(self, vector):
-        """ Do a vector normalization using dot product. """
-        mag = sqrt(self._vectorDot(vector, vector))
-        normVector = [dimension / mag for dimension in vector]
-        return tuple(normVector)
