@@ -282,7 +282,7 @@ class LSM6DS33(object):
             zVal = self._combineLoHi(zl, zh)
 
         # Return the vector
-        return (xval, yval, zval)
+        return (xVal, yVal, zVal)
 
 
     ## Public methods

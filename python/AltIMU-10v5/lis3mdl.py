@@ -279,7 +279,7 @@ class LIS3MDL(object):
             zVal = self._combineLoHi(zl, zh)
 
         # Return the vector
-        return (xval, yval, zval)
+        return (xVal, yVal, zVal)
 
 
     def getTemperatureRaw(self):
