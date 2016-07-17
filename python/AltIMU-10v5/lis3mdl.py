@@ -261,20 +261,20 @@ class LIS3MDL(object):
         # Read register outputs for the requested dimensions and combine
         # low and high byte values
         if x:
-            xl = self._readRegister(registers['xl'])
-            xh = self._readRegister(registers['xh'])
+            xl = self._readRegister(self.magRegisters['xl'])
+            xh = self._readRegister(self.magRegisters['xh'])
 
             xVal = self._combineLoHi(xl, xh)
 
         if y:
-            yl = self._readRegister(registers['yl'])
-            yh = self._readRegister(registers['yh'])
+            yl = self._readRegister(self.magRegisters['yl'])
+            yh = self._readRegister(self.magRegisters['yh'])
 
             yVal = self._combineLoHi(yl, yh)
 
         if z:
-            zl = self._readRegister(registers['zl'])
-            zh = self._readRegister(registers['zh'])
+            zl = self._readRegister(self.magRegisters['zl'])
+            zh = self._readRegister(self.magRegisters['zh'])
 
             zVal = self._combineLoHi(zl, zh)
 
