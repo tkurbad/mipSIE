@@ -13,6 +13,4 @@ magnet.enable()
 
 while True:
     print imu.getTemperatureCelsius()
-    sleep(0.1)
     print magnet.getMagnetometerRaw()
-    sleep(0.1)
