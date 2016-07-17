@@ -232,7 +232,7 @@ class LIS3MDL(object):
 
             # First write to OUT_X_L | 10000000b register address to
             # enable auto increment of registers
-            self._i2c.write(self.magRegisters['xl'] | 0x80)
+            self._i2c.write_byte(self.magRegisters['xl'] | 0x80)
 
             # Now read all the magnetometer values in one go
             [xl, xh, yl, yh, zl, zh] = self._readRegister(
