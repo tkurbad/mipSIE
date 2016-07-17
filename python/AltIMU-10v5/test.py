@@ -9,7 +9,7 @@ imu = LSM6DS33()
 imu.enable()
 
 magnet = LIS3MDL()
-magnet.enable(autoIncrementRegisters = False)
+magnet.enable()
 
 while True:
     print imu.getTemperatureCelsius()
