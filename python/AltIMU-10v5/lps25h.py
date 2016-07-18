@@ -217,7 +217,7 @@ class LPS25H(I2C):
         """
         if rounded:
             return round(self.getBarometerRaw() / 4096.0, 1)
-        return self.getBarometerRaw / 4096.0
+        return self.getBarometerRaw() / 4096.0
 
 
     def getTemperatureCelsius(self, rounded = True):
