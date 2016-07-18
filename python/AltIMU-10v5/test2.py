@@ -11,14 +11,6 @@ imu = AltIMU()
 imu.enable()
 
 profile = Profile()
-prCalibration = []
-
-for i in range(5):
-    prCalibration[i] = profile.calibrate(10000)
-
-prBias = float(sum(prCalibration)) / float(len(prCalibration))
-
-profile.bias = prBias
 
 profile.enable()
 for x in range(1000):
