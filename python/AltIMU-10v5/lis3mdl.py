@@ -155,7 +155,7 @@ class LIS3MDL(I2C):
         if autoIncrementRegisters:
             # Auto increment register address during read
             # There is no control register for this setting on the
-            # LISM3MDL. Instead, this feature is enabled by doing a raw
+            # LIS3MDL. Instead, this feature is enabled by doing a raw
             # write to the desired start register | 0x80.
             self._autoIncrementRegisters = True
 
@@ -172,7 +172,6 @@ class LIS3MDL(I2C):
         # Check if magnetometer has been enabled
         if not self.magEnabled:
             raise(Exception('Magnetometer has to be enabled first'))
-
 
         if self._autoIncrementRegisters:
             if (not x and not y and not z):
@@ -243,14 +242,14 @@ class LIS3MDL(I2C):
 
 
     def getAllRaw(self, x = True, y = True, z = True):
-        """ Return a 7-tuple of the raw output of all three sensors,
-            accelerometer, gyroscope, temperature.
+        """ Return a 4-tuple of the raw output of the two sensors,
+            magnetometer and temperature.
         """
         return self.getMagnetometerRaw(x, y, z) \
                 + (self.getTemperatureRaw(), )
 
 
-    def getTemperatureCelsius(self):
+    def getTemperatureCelsius(self, rounded = True):
         """ Return the temperature sensor reading in C as a floating
             point number rounded to one decimal place.
         """
@@ -259,4 +258,6 @@ class LIS3MDL(I2C):
         # steps per degree Celsius.
         # Thus, the following statement should return the temperature in
         # degrees Celsius.
-        return round(25.0 + self.getTemperatureRaw() / 8.0, 1)
+        if rounded:
+            return round(25.0 + self.getTemperatureRaw() / 8.0, 1)
+        return 25.0 + self.getTemperatureRaw() / 8.0
