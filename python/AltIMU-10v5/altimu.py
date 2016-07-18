@@ -43,7 +43,7 @@ class AltIMU(object):
         self.temperature = False
 
         # Initialize tracked gyroscope angles
-        self.gyrAngles = []
+        self.gyrAngles = [None] * 3
 
 
     def __del__(self):
