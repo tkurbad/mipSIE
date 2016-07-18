@@ -14,7 +14,7 @@ profile = Profile()
 
 profile.enable()
 x = 0
-while x < 2000:
+while x < 1000:
     print "Gyro Angles:", imu.trackGyroAngle()
     x += 1
 profile.disable()
@@ -22,4 +22,4 @@ profile.disable()
 stream = StringIO()
 stats = Stats(profile, stream = stream).sort_stats('cumulative')
 stats.print_stats()
-print stream.getvalue()
+import pdb; pdb.set_trace()
