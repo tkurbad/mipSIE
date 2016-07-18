@@ -239,7 +239,7 @@ class LSM6DS33(I2C):
 
 
     ## Public methods
-    def enable(self, accelerometer = True, gyro = True,
+    def enable(self, accelerometer = True, gyroscope = True,
                autoIncrementRegisters = True):
         """ Enable and set up the given sensors in the IMU device and
             determine whether to auto increment registers during I2C
@@ -271,7 +271,7 @@ class LSM6DS33(I2C):
             self._writeRegister(self.CTRL1_XL, 0x88)
             self.accEnabled = True
 
-        if gyro:
+        if gyroscope:
             # Gyro
             # 1.66 kHz / 245 dps
             # 10000000b
