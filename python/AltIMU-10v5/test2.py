@@ -23,6 +23,6 @@ while True:
     stop = datetime.now() - start
     start = datetime.now()
     print "Accel:", imu.getAccelerometerAngles()
-    print "Kalman:", imu.getKalmanAngles(deltaT = stop.microseconds/1000000.0)
-    print "Compl:", imu.getComplementaryAngles(deltaT = stop.microseconds/1000000.0)
+    print "Kalman:", imu.getKalmanAngles(deltaT = stop.microseconds/500000.0)
+    print "Compl:", imu.getComplementaryAngles(deltaT = stop.microseconds/500000.0)
     sleep(0.3)

@@ -250,6 +250,8 @@ class AltIMU(object):
     def getComplementaryAngles(self, x = True, y = True, z = True, deltaT = 0.05):
         """ Calculate combined angles of accelerometer and gyroscope
             using a complementary filter.
+            Note: This filter is very cheap CPU-wise, but the result
+            follows the drift of the gyroscope.
         """
         # If accelerometer or gyroscope is not enabled or none of the
         # dimensions is requested make a quick turnaround
@@ -279,6 +281,8 @@ class AltIMU(object):
     def getKalmanAngles(self, x = True, y = True, z = True, deltaT = 0.05):
         """ Calculate combined angles of accelerometer and gyroscope
             using a Kalman filter.
+            Note: This filter is complex, but eliminates gyroscope drift
+            altogether.
         """
         # If accelerometer or gyroscope is not enabled or none of the
         # dimensions is requested make a quick turnaround
