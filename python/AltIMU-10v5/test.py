@@ -7,13 +7,13 @@ from lis3mdl import LIS3MDL
 from lps25h import LPS25H
 
 imu = LSM6DS33()
-imu.enable()
+imu.enable(autoIncrementRegisters = False)
 
 magnet = LIS3MDL()
-magnet.enable()
+magnet.enable(autoIncrementRegisters = False)
 
 baro = LPS25H()
-baro.enable()
+baro.enable(autoIncrementRegisters = False)
 
 while True:
     print "Gyro:", imu.getGyroscopeRaw()
