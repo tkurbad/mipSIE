@@ -43,7 +43,7 @@ class AltIMU(object):
         self.temperature = False
 
         # Initialize tracked gyroscope angles
-        self.gyrAngles = [None] * 3
+        self.gyrAngles = []
 
 
     def __del__(self):
@@ -108,9 +108,7 @@ class AltIMU(object):
         """ Calibrate (i.e. set to '0') the tracked gyroscope
             angles. (cf. self.trackGyroAngle())
         """
-        self.gyrAngles[0] = xCal
-        self.gyrAngles[1] = yCal
-        self.gyrAngles[3] = zCal
+        self.gyrAngles = [xCal, yCal, zCal]
 
 
     def getGyroRotationRate(self, x = True, y = True, z = True):
@@ -142,10 +140,16 @@ class AltIMU(object):
             The result is returned as a vector (3-tuple) of floating
             point numbers representing the angle in degrees.
         """
+        # Assert if angles had been calibrated
+        try:
+            assert(len(self.gyrAngles) == 3)
+        except AssertionError, e:
+            raise(Exception('Gyroscope must be calibrated before angle tracking!'))
+
         # If gyroscope is not enabled or none of the dimensions is
         # requested make a quick turnaround
         if not (self.gyroscope and (x or y or z)):
-            return (self.gyrXAngle, self.gyrYAngle, self.gyrZAngle)
+            return tuple(self.gyrAngles)
 
         # Get current gyroscope rotation rate
         gyrRates = self.getGyroRotationRate(x = x, y = y, z = z)
