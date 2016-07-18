@@ -133,121 +133,61 @@ class LPS25H(I2C):
             determine whether to auto increment registers during I2C
             read operations.
         """
-        # Disable magnetometer and temperature sensor first
+        # Power down device first
         self._writeRegister(self.CTRL_REG1, 0x00)
-        self._writeRegister(self.CTRL_REG3, 0x03)
 
         # Initialize flags
         self._autoIncrementRegisters = False
-        self.magEnabled = False
+        self.pressEnabled = False
         self.tempEnabled = False
 
-        # Enable device in continuous conversion mode
-        self._writeRegister(self.CTRL_REG3, 0x00)
-
-        # Initial value for CTRL_REG1
-        ctrl_reg1 = 0x00
-
-        if magnetometer:
-            # Magnetometer
-
+        if barometer or temperature:
+            # Barometer and temperature sensor
+            # (Both sensors are enabled together on the LPS25H)
             # CTRL_REG1
-            # Ultra-high-performance mode for X and Y
-            # Output data rate 10Hz
-            # 01110000b
-            ctrl_reg1 += 0x70
+            # Power up
+            # Output data rate for both sensors 12.5Hz
+            # 10110000
+            self._writeRegister(self.CTRL_REG1, 0xb0)
 
-            # CTRL_REG2
-            # +/- 4 gauss full scale
-            self._writeRegister(self.CTRL_REG2, 0x00);
-
-            # CTRL_REG4
-            # Ultra-high-performance mode for Z
-            # 00001100b
-            self._writeRegister(self.CTRL_REG4, 0x0c);
-
-            self.magEnabled = True
-
-        if temperature:
-            # Temperature sensor enabled
-            # 10000000b
-            ctrl_reg1 += 0x80
+            self.pressEnabled = True
             self.tempEnabled = True
 
         if autoIncrementRegisters:
             # Auto increment register address during read
             # There is no control register for this setting on the
-            # LISM3MDL. Instead, this feature is enabled by doing a raw
+            # LPS25H. Instead, this feature is enabled by doing a raw
             # write to the desired start register | 0x80.
             self._autoIncrementRegisters = True
 
-        # Write calculated value to the CTRL_REG1 register
-        self._writeRegister(self.CTRL_REG1, ctrl_reg1)
 
-
-    def getMagnetometerRaw(self, x = True, y = True, z = True):
-        """ Return a 3-dimensional vector (3-tuple) of raw magnetometer
-            data.
-            Booleans 'x', 'y', and 'z' can be used to request specific
-                vector dimensions.
+    def getBarometerRaw(self):
+        """ Return the raw pressure sensor data.
         """
-        # Check if magnetometer has been enabled
-        if not self.magEnabled:
-            raise(Exception('Magnetometer has to be enabled first'))
-
+        # Check if barometer has been enabled
+        if not self.pressEnabled:
+            raise(Exception('Barometer has to be enabled first'))
 
         if self._autoIncrementRegisters:
-            if (not x and not y and not z):
-                # In case none of the values is requested, we can make
-                # a quick turnaround
-                return (None, None, None)
+            # First write to PRESS_OUT_XL | 10000000b register address
+            # to enable auto increment of registers
+            self._write(self.pressRegisters['pxl'] | 0x80)
 
-            # In any other case we read all the values first, because
-            # this is a reasonably fast operation
+            # Now read all the pressure bytes in one go
+            [pxl, pl, ph] = self._readRegister(
+                self.pressRegisters['pxl'], count = 3)
 
-            # First write to OUT_X_L | 10000000b register address to
-            # enable auto increment of registers
-            self._write(self.magRegisters['xl'] | 0x80)
-
-            # Now read all the magnetometer values in one go
-            [xl, xh, yl, yh, zl, zh] = self._readRegister(
-                self.magRegisters['xl'], count = 6)
-
-            # In the return step we assess the requested vector
-            # dimensions and return None for the ones that weren't
-            # requested.
-            return (self._combineLoHi(xl, xh) if x else None,
-                    self._combineLoHi(yl, yh) if y else None,
-                    self._combineLoHi(zl, zh) if z else None,)
+            # Return the combined signed 24 bit value
+            return self._combineSignedXLoLoHi(pxl, pl, ph)
 
         ## In case auto increment of registers is not enabled we have to
         #  read all registers consecutively.
+        pxl = self._readRegister(self.pressRegisters['pxl'])
+        pl = self._readRegister(self.pressRegisters['pl'])
+        ph = self._readRegister(self.pressRegisters['ph'])
 
-        # Initialize return values
-        xVal = yVal = zVal = None
-
-        # Read register outputs for the requested dimensions and combine
-        # low and high byte values
-        if x:
-            xl = self._readRegister(self.magRegisters['xl'])
-            xh = self._readRegister(self.magRegisters['xh'])
-
-            xVal = self._combineLoHi(xl, xh)
-
-        if y:
-            yl = self._readRegister(self.magRegisters['yl'])
-            yh = self._readRegister(self.magRegisters['yh'])
-
-            yVal = self._combineLoHi(yl, yh)
-
-        if z:
-            zl = self._readRegister(self.magRegisters['zl'])
-            zh = self._readRegister(self.magRegisters['zh'])
-
-            zVal = self._combineLoHi(zl, zh)
-
-        # Return the vector
-        return (xVal, yVal, zVal)
+        # Return the combined signed 24 bit value
+        return self._combineSignedXLoLoHi(pxl, pl, ph)
 
 
     def getTemperatureRaw(self):
@@ -261,24 +201,48 @@ class LPS25H(I2C):
         th = self._readRegister(self.tempRegisters['th'])
 
         # Return combined result
-        return self._combineLoHi(tl, th)
+        return self._combineSignedLoHi(tl, th)
 
 
     def getAllRaw(self, x = True, y = True, z = True):
-        """ Return a 7-tuple of the raw output of all three sensors,
-            accelerometer, gyroscope, temperature.
+        """ Return a tuple of the raw output of the two sensors,
+            pressure and temperature.
         """
-        return self.getMagnetometerRaw(x, y, z) \
-                + (self.getTemperatureRaw(), )
+        return (self.getBarometerRaw(), self.getTemperatureRaw(), )
 
 
-    def getTemperatureCelsius(self):
+    def getBarometerMillibars(self, rounded = True):
+        """ Return the barometric pressure in millibars (mbar)
+            (same as hectopascals (hPa)).
+        """
+        if rounded:
+            return round(self.getBarometerRaw() / 4096.0, 1)
+        return self.getBarometerRaw / 4096.0
+
+
+    def getTemperatureCelsius(self, rounded = True):
         """ Return the temperature sensor reading in C as a floating
             point number rounded to one decimal place.
         """
         # According to the datasheet, the raw temperature value is 0
-        # @ 25 degrees Celsius and the resolution of the sensor is 8
+        # @ 42.5 degrees Celsius and the resolution of the sensor is 480
         # steps per degree Celsius.
         # Thus, the following statement should return the temperature in
         # degrees Celsius.
-        return round(25.0 + self.getTemperatureRaw() / 8.0, 1)
+        if rounded:
+            return round(42.5 + self.getTemperatureRaw() / 480.0, 1)
+        return 42.5 + self.getTemperatureRaw() / 480.0
+
+
+    def getAltitude(self, altimeterMbar = 1013.25, rounded = True):
+        """ Return the altitude in meters above the standard pressure
+            level of 1013.25 hPa, calculated using the 1976 US Standard
+            Atmosphere model.
+            altimeterMbar can be adjusted to the actual pressure
+            "adjusted to sea level" (QNH) to compensate for regional
+            and/or weather-based variations.
+        """
+        altitude = (1 - pow(self.getBarometerMillibars(rounded = False) / altimeterMbar, 0.190263)) * 44330.8
+        if rounded:
+            return round(altitude, 2)
+        return altitude
