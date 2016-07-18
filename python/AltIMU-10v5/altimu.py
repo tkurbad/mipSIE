@@ -28,7 +28,7 @@ class AltIMU(object):
     """ Class to control Pololu's AltIMU-10v5. """
 
     # Class variables and constants
-    GYRO_GAIN = 0.008575    # Gyroscope dps/LSB for 245 dps full scale
+    GYRO_GAIN = 0.00875    # Gyroscope dps/LSB for 245 dps full scale
 
     def __init__(self):
         """ Initialize some flags and values. """
@@ -145,7 +145,7 @@ class AltIMU(object):
         return (gyrXRate, gyrYRate, gyrZRate)
 
 
-    def trackGyroAngle(self, x = True, y = True, z = True, deltaT = 0.02):
+    def trackGyroAngle(self, x = True, y = True, z = True, deltaT = 0.05):
         """ Track gyrometer angle change over time delta deltaT.
             deltaT has to be extremely accurate, otherwise the gyroscope
             values will drift.
