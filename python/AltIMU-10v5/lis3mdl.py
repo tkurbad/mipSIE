@@ -266,5 +266,5 @@ class LIS3MDL(I2C):
         # Thus, the following statement should return the temperature in
         # degrees Celsius.
         if rounded:
-            return round(25.0 + self.getTemperatureRaw() / 8.0, 1)
-        return 25.0 + self.getTemperatureRaw() / 8.0
+            return round(25.0 + self.getTemperatureRaw() / 16.0, 1)
+        return 25.0 + self.getTemperatureRaw() / 16.0
