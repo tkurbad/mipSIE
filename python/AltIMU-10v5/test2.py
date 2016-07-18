@@ -24,7 +24,7 @@ for profileRun in range(3):
     stats.print_stats(0)
 
     stream.seek(0)
-    cumTime.append() = float(stream.readline().split(' ')[-2])
+    cumTime.append(float(stream.readline().split(' ')[-2]))
 
 looptime = float(sum(cumTime)) / (float(len(cumTime)) * 1000.0)
 
