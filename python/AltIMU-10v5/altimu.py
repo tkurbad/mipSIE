@@ -151,6 +151,6 @@ class AltIMU(object):
         gyrRates = self.getGyroRotationRate(x = x, y = y, z = z)
 
         # Sum up and multiply by deltaT for angle tracking
-        self.gyrAngles = [self.gyrAngles[i] if gyrRates is None else self.gyrAngles[i] + gyrRates[i] * deltaT for in range(3)]
+        self.gyrAngles = [self.gyrAngles[i] if gyrRates is None else self.gyrAngles[i] + gyrRates[i] * deltaT for i in range(3)]
 
         return tuple(self.gyrAngles)
