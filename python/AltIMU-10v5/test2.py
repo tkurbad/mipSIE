@@ -16,9 +16,12 @@ imu.calibrateGyroAngles()
 
 #print angles
 
+start = datetime.now()
+
+
 while True:
+    stop = datetime.now() - start
     start = datetime.now()
     print "Accel:", imu.getAccelerometerAngles()
-    print "Kalman:", imu.getKalmanAngles()
-    while (datetime.now() - start).microseconds < 50000:
-        sleep(0.001)
+    print "Kalman:", imu.getKalmanAngles(deltaT = stop.microseconds/1000000.0)
+    sleep(0.3)
