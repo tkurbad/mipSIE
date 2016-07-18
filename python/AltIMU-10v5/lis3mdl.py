@@ -182,13 +182,10 @@ class LIS3MDL(I2C):
             # In any other case we read all the values first, because
             # this is a reasonably fast operation
 
-            # First write to OUT_X_L | 10000000b register address to
-            # enable auto increment of registers
-            self._write(self.magRegisters['xl'] | 0x80)
-
-            # Now read all the magnetometer values in one go
+            # To read all the magnetometer values in one go, the start
+            # register has to be ORed by 0x80 (10000000b)
             [xl, xh, yl, yh, zl, zh] = self._readRegister(
-                self.magRegisters['xl'], count = 6)
+                (self.magRegisters['xl'] | 0x80), count = 6)
 
             # In the return step we assess the requested vector
             # dimensions and return None for the ones that weren't
@@ -233,7 +230,17 @@ class LIS3MDL(I2C):
         if not self.tempEnabled:
             raise(Exception('Temperature sensor has to be enabled first'))
 
-        # Read temperature sensor data
+        if self._autoIncrementRegisters:
+            # To read both temperature bytes in one go, the start
+            # register has to be ORed by 0x80 (10000000b)
+            [tl, th] = self._readRegister(
+                (self.tempRegisters['tl'] | 0x80), count = 2)
+
+            # Return combined signed 16 bit value
+            return self._combineSignedLoHi(tl, th)
+
+        ## In case auto increment of registers is not enabled we have to
+        #  read all registers consecutively.
         tl = self._readRegister(self.tempRegisters['tl'])
         th = self._readRegister(self.tempRegisters['th'])
 

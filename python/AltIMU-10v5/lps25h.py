@@ -169,14 +169,10 @@ class LPS25H(I2C):
             raise(Exception('Barometer has to be enabled first'))
 
         if self._autoIncrementRegisters:
-            # First write to PRESS_OUT_XL | 10000000b register address
-            # to enable auto increment of registers
-            self._write(self.pressRegisters['pxl'] | 0x80)
-
-            # Now read all the pressure bytes in one go
+            # To read all the pressure bytes in one go, the start
+            # register has to be ORed by 0x80 (10000000b)
             [pxl, pl, ph] = self._readRegister(
-                self.pressRegisters['pxl'], count = 3)
-            import pdb; pdb.set_trace()
+                (self.pressRegisters['pxl'] | 0x80), count = 3)
 
             # Return the combined signed 24 bit value
             return self._combineSignedXLoLoHi(pxl, pl, ph)
@@ -197,7 +193,17 @@ class LPS25H(I2C):
         if not self.tempEnabled:
             raise(Exception('Temperature sensor has to be enabled first'))
 
-        # Read temperature sensor data
+        if self._autoIncrementRegisters:
+            # To read both temperature bytes in one go, the start
+            # register has to be ORed by 0x80 (10000000b)
+            [tl, th] = self._readRegister(
+                (self.tempRegisters['tl'] | 0x80), count = 2)
+
+            # Return combined signed 16 bit value
+            return self._combineSignedLoHi(tl, th)
+
+        ## In case auto increment of registers is not enabled we have to
+        #  read all registers consecutively.
         tl = self._readRegister(self.tempRegisters['tl'])
         th = self._readRegister(self.tempRegisters['th'])
 
