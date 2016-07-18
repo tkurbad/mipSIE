@@ -151,9 +151,9 @@ class LSM6DS33(I2C):
         """
         super(LSM6DS33, self).__init__(busId, address)
         self._autoIncrementRegisters = False
-        self._ready = False
         self.accEnabled = False
         self.gyroEnabled = False
+        self.tempEnabled = False
 
 
     def __del__(self):
@@ -240,7 +240,7 @@ class LSM6DS33(I2C):
 
     ## Public methods
     def enable(self, accelerometer = True, gyroscope = True,
-               autoIncrementRegisters = True):
+               temperature = True, autoIncrementRegisters = True):
         """ Enable and set up the given sensors in the IMU device and
             determine whether to auto increment registers during I2C
             read operations.
@@ -278,6 +278,10 @@ class LSM6DS33(I2C):
             self._writeRegister(self.CTRL2_G, 0x80)
             self.gyroEnabled = True
 
+        if temperature:
+            # Temperature sensor on LSM6DS33 is "always on"
+            self.tempEnabled = True
+
         if autoIncrementRegisters:
             # Auto increment register address during read
             # 00000100b
@@ -286,9 +290,6 @@ class LSM6DS33(I2C):
 
         # Write calculated value to the CTRL3_C register
         self._writeRegister(self.CTRL3_C, ctrl3_c)
-
-        # Set flag that device is ready
-        self._ready = True
 
 
     def getAccelerometerRaw(self, x = True, y = True, z = True):
@@ -322,8 +323,8 @@ class LSM6DS33(I2C):
     def getTemperatureRaw(self):
         """ Return the raw temperature value. """
         # Check if device has been set up
-        if not self._ready:
-            raise(Exception('Device has to be enabled first'))
+        if not self.tempEnabled:
+            raise(Exception('Temperature sensor has to be enabled first'))
 
         # Read temperature sensor data
         if self._autoIncrementRegisters:
