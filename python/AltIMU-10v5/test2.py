@@ -12,4 +12,6 @@ imu.calibrateGyroAngles()
 
 for x in range(10000):
     startTime = datetime.now()
-    print "Gyro Angles:", imu.trackGyroAngle(deltaT = 0.001)
+    angles = imu.trackGyroAngle(deltaT = 0.001)
+
+print angles
