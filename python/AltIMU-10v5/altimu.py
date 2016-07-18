@@ -50,7 +50,9 @@ class AltIMU(object):
 
     def __del__(self):
         """ Cleanup routine. """
-        for device in [self.lsm6ds33, self.lis3mdl, self.lps25h]:
+        for device in [self.accelGyroSensor,
+                       self.baroTempSensor,
+                       self.magnetSensor]:
             if device is not None:
                 try:
                     del(device)
