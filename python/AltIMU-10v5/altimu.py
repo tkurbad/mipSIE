@@ -267,9 +267,9 @@ class AltIMU(object):
             self.initFiltersFromAccel = False
 
         # Calculate complementary filtered angles
-        self.complementaryAngles = [None if (gyrRates[i] is None or accAngles[i] is None)
+        self.complementaryAngles = [None if (gyrRates[i] is None or accelAngles[i] is None)
             else self.C_FILTER_CONST * (self.complementaryAngles[i] + gyrRates[i] * deltaT)
-            + (1 - self.C_FILTER_CONST) * accAngles[i]
+            + (1 - self.C_FILTER_CONST) * accelAngles[i]
             for i in range(3)]
 
         # Return vector
