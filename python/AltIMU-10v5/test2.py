@@ -10,8 +10,11 @@ imu.enable()
 
 imu.calibrateGyroAngles()
 
-for x in range(50000):
+for x in range(1000):
     startTime = datetime.now()
-    angles = imu.trackGyroAngle(deltaT = 0.00015)
+    angles = imu.trackGyroAngles(deltaT = 0.0002)
 
 print angles
+
+for x in range(100):
+    print "Accel:", imu.getAccelerometerAngles()

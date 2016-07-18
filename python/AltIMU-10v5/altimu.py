@@ -16,6 +16,8 @@
 ########################################################################
 
 # Imports
+import math
+
 from time import sleep
 
 from lis3mdl import LIS3MDL as Magnet
@@ -112,7 +114,7 @@ class AltIMU(object):
         self.gyrAngles = [xCal, yCal, zCal]
 
 
-    def getGyroRotationRate(self, x = True, y = True, z = True):
+    def getGyroRotationRates(self, x = True, y = True, z = True):
         """ Get the rotation rate of the gyroscope for the requested
             axes. The result is returned as a vector (3-tuple) of
             floating point numbers representing the angular velocity
@@ -136,7 +138,7 @@ class AltIMU(object):
         return tuple(gyrRates)
 
 
-    def trackGyroAngle(self, x = True, y = True, z = True, deltaT = 0.02):
+    def trackGyroAngles(self, x = True, y = True, z = True, deltaT = 0.02):
         """ Track gyrometer angle change over time delta deltaT.
             deltaT has to be extremely accurate, otherwise the gyroscope
             values will drift.
@@ -155,7 +157,7 @@ class AltIMU(object):
             return tuple(self.gyrAngles)
 
         # Get current gyroscope rotation rate
-        gyrRates = self.getGyroRotationRate(x = x, y = y, z = z)
+        gyrRates = self.getGyroRotationRates(x = x, y = y, z = z)
 
         # Sum up and multiply by deltaT for angle tracking
         self.gyrAngles = [self.gyrAngles[i] if gyrRates is None
@@ -163,3 +165,23 @@ class AltIMU(object):
                             for i in range(3)]
 
         return tuple(self.gyrAngles)
+
+
+    def getAccelerometerAngles(self, x = True, y = True, z = True):
+        """ Calculate accelerometer angles. """
+        # If accelerometer is not enabled or none of the dimensions is
+        # requested make a quick turnaround
+        if not (self.accelerometer and (x or y or z)):
+            return (None, None, None)
+
+        # Get raw accelerometer data
+        (accelXRaw, accelYRaw, accelZRaw) = self.accelGyroSensor.getAccelerometerRaw(
+                                                x = x, y = y, z = z)
+
+        # Calculate angles
+        accelXAngle = math.degrees(math.atan2(accelYRaw, accelZRaw) + math.pi)
+        accelYAngle = math.degrees(math.atan2(accelXRaw, accelZRaw) + math.pi)
+        accelZAngle = math.degrees(math.atan2(accelXRaw, accelYRaw) + math.pi)
+
+        # Return vector
+        return (accelXAngle, accelYAngle, accelZAngle)
