@@ -43,9 +43,7 @@ class AltIMU(object):
         self.temperature = False
 
         # Initialize tracked gyroscope angles
-        self.gyrXAngle = None
-        self.gyrYAngle = None
-        self.gyrZAngle = None
+        self.gyrAngles = []
 
 
     def __del__(self):
@@ -106,13 +104,13 @@ class AltIMU(object):
                 autoIncrementRegisters = autoIncrementRegisters)
 
 
-    def calibrateGyroAngles(self, x = 0.0, y = 0.0, z = 0.0):
+    def calibrateGyroAngles(self, xCal = 0.0, yCal = 0.0, zCal = 0.0):
         """ Calibrate (i.e. set to '0') the tracked gyroscope
             angles. (cf. self.trackGyroAngle())
         """
-        self.gyrXAngle = x
-        self.gyrYAngle = y
-        self.gyrZAngle = z
+        self.gyrAngles[0] = xCal
+        self.gyrAngles[1] = yCal
+        self.gyrAngles[3] = zCal
 
 
     def getGyroRotationRate(self, x = True, y = True, z = True):
@@ -126,23 +124,15 @@ class AltIMU(object):
         if not (self.gyroscope and (x or y or z)):
             return (None, None, None)
 
-        # Initialize output values
-        gyrXRate = gyrYRate = gyrZRate = None
-
         # Get raw data from gyroscope
-        (gyrXRaw, gyrYRaw, gyrZRaw) = self.accelGyroSensor.getGyroscopeRaw(
+        gyrRaw = self.accelGyroSensor.getGyroscopeRaw(
                                         x = x, y = y, z = z)
 
         # Calculate requested values
-        if x:
-            gyrXRate = gyrXRaw * self.GYRO_GAIN
-        if y:
-            gyrYRate = gyrYRaw * self.GYRO_GAIN
-        if z:
-            gyrZRate = gyrZRaw * self.GYRO_GAIN
+        gyrRates = [None if gyrRawDimension is None else gyrRawDimension * self.GYRO_GAIN for gyrRawDimension in gyrRaw]
 
         # Return result vector
-        return (gyrXRate, gyrYRate, gyrZRate)
+        return tuple(gyrRates)
 
 
     def trackGyroAngle(self, x = True, y = True, z = True, deltaT = 0.02):
@@ -158,16 +148,9 @@ class AltIMU(object):
             return (self.gyrXAngle, self.gyrYAngle, self.gyrZAngle)
 
         # Get current gyroscope rotation rate
-        (gyrXRate, gyrYRate, gyrZRate) = self.getGyroRotationRate(
-                                            x = x, y = y, z = z)
+        gyrRates = self.getGyroRotationRate(x = x, y = y, z = z)
 
         # Sum up and multiply by deltaT for angle tracking
-        if x:
-            self.gyrXAngle += gyrXRate * deltaT
-        if y:
-            self.gyrYAngle += gyrYRate * deltaT
-        if z:
-            self.gyrZAngle += gyrZRate * deltaT
+        self.gyrAngles = [self.gyrAngles[i] if gyrRates is None else self.gyrAngles[i] + gyrRates[i] * deltaT for in range(3)]
 
-        # Return tracked angles
-        return(self.gyrXAngle, self.gyrYAngle, self.gyrZAngle)
+        return tuple(self.gyrAngles)
