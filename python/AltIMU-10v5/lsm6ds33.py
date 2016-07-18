@@ -266,16 +266,16 @@ class LSM6DS33(I2C):
 
         if accelerometer:
             # Accelerometer
-            # 1.66 kHz / +/- 4g
-            # 10001000b
-            self._writeRegister(self.CTRL1_XL, 0x88)
+            # 1.66 kHz / +/- 8g
+            # 10001100b
+            self._writeRegister(self.CTRL1_XL, 0x8c)
             self.accEnabled = True
 
         if gyroscope:
             # Gyro
-            # 1.66 kHz / 245 dps
-            # 10000000b
-            self._writeRegister(self.CTRL2_G, 0x80)
+            # 1.66 kHz / 500 dps
+            # 10000100b
+            self._writeRegister(self.CTRL2_G, 0x84)
             self.gyroEnabled = True
 
         if temperature:

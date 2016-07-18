@@ -28,7 +28,7 @@ class AltIMU(object):
     """ Class to control Pololu's AltIMU-10v5. """
 
     # Class variables and constants
-    GYRO_GAIN = 0.00875    # Gyroscope dps/LSB for 245 dps full scale
+    GYRO_GAIN = 0.0175    # Gyroscope dps/LSB for 500 dps full scale
 
     def __init__(self):
         """ Initialize some flags and values. """
@@ -44,6 +44,7 @@ class AltIMU(object):
 
         # Initialize tracked gyroscope angles
         self.gyrAngles = []
+        self.gyrCorrection = [0.0012, 0.00018, 0,00047]
 
 
     def __del__(self):
@@ -127,7 +128,9 @@ class AltIMU(object):
                                         x = x, y = y, z = z)
 
         # Calculate requested values
-        gyrRates = [None if gyrRawDimension is None else gyrRawDimension * self.GYRO_GAIN for gyrRawDimension in gyrRaw]
+        gyrRates = [None if gyrRawDimension is None
+                        else gyrRawDimension * self.GYRO_GAIN
+                        for gyrRawDimension in gyrRaw]
 
         # Return result vector
         return tuple(gyrRates)
@@ -155,6 +158,8 @@ class AltIMU(object):
         gyrRates = self.getGyroRotationRate(x = x, y = y, z = z)
 
         # Sum up and multiply by deltaT for angle tracking
-        self.gyrAngles = [self.gyrAngles[i] if gyrRates is None else self.gyrAngles[i] + gyrRates[i] * deltaT for i in range(3)]
+        self.gyrAngles = [self.gyrAngles[i] if gyrRates is None
+                            else self.gyrAngles[i] + gyrRates[i] * deltaT
+                            for i in range(3)]
 
         return tuple(self.gyrAngles)
