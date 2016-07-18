@@ -145,7 +145,7 @@ class AltIMU(object):
         return (gyrXRate, gyrYRate, gyrZRate)
 
 
-    def trackGyroAngle(self, x = True, y = True, z = True, deltaT = 0.05):
+    def trackGyroAngle(self, x = True, y = True, z = True, deltaT = 0.02):
         """ Track gyrometer angle change over time delta deltaT.
             deltaT has to be extremely accurate, otherwise the gyroscope
             values will drift.
