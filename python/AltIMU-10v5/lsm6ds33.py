@@ -360,7 +360,7 @@ class LSM6DS33(I2C):
                 + (self.getTemperatureRaw(), )
 
 
-    def getTemperatureCelsius(self):
+    def getTemperatureCelsius(self, rounded = True):
         """ Return the temperature sensor reading in C as a floating
             point number rounded to one decimal place.
         """
@@ -369,4 +369,6 @@ class LSM6DS33(I2C):
         # steps per degree Celsius.
         # Thus, the following statement should return the temperature in
         # degrees Celsius.
-        return round(25.0 + self.getTemperatureRaw() / 16.0, 1)
+        if rounded:
+            return round(25.0 + self.getTemperatureRaw() / 16.0, 1)
+        return 25.0 + self.getTemperatureRaw() / 16.0
