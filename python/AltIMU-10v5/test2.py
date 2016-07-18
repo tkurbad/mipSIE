@@ -11,15 +11,21 @@ imu = AltIMU()
 imu.enable()
 
 profile = Profile()
+prCalibration = []
+
+for i in range(5):
+    prCalibration[i] = profile.calibrate(10000)
+
+prBias = float(sum(prCalibration)) / float(len(prCalibration))
+
+profile.bias = prBias
 
 profile.enable()
-x = 0
-while x < 1000:
+for x in range(1000):
     print "Gyro Angles:", imu.trackGyroAngle()
-    x += 1
 profile.disable()
 
 stream = StringIO()
 stats = Stats(profile, stream = stream).sort_stats('cumulative')
-stats.print_stats()
+stats.print_stats(1)
 import pdb; pdb.set_trace()
