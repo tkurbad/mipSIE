@@ -8,8 +8,10 @@ from altimu import AltIMU
 imu = AltIMU()
 imu.enable()
 
+imu.calibrateGyroAngles()
+
 for x in range(1000):
     startTime = datetime.now()
     print "Gyro Angles:", imu.trackGyroAngle()
-    while (datetime.now() - startTime).microseconds < 49000:
-        sleep(0.001)
+    while (datetime.now() - startTime).microseconds <= 50000:
+        sleep(0.0001)
