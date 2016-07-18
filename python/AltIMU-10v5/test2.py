@@ -19,5 +19,5 @@ profile.disable()
 
 stream = StringIO()
 stats = Stats(profile, stream = stream).sort_stats('cumulative')
-stats.print_stats(1)
+stats.print_stats(0)
 import pdb; pdb.set_trace()
