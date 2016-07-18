@@ -125,7 +125,8 @@ class AltIMU(object):
 
         # Determine wether Kalman/complementary filters should be
         # initialized with accelerometer readings
-        self.initFiltersFromAccel = initFiltersFromAccel
+        self.initComplementaryFromAccel = initFiltersFromAccel
+        self.initKalmanFromAccel = initFiltersFromAccel
 
         # Enable LSM6DS33 if accelerometer and/or gyroscope are requested
         if self.accelerometer or self.gyroscope:
@@ -160,7 +161,8 @@ class AltIMU(object):
         # Disable Kalman filter initialization if accelerometer is
         # deactivated.
         if not self.accelerometer:
-            self.initFiltersFromAccel = False
+            self.initComplementaryFromAccel = False
+            self.initKalmanFromAccel = False
 
 
     def calibrateGyroAngles(self, xCal = 0.0, yCal = 0.0, zCal = 0.0):
@@ -262,11 +264,11 @@ class AltIMU(object):
         gyrRates = self.getGyroRotationRates(x = x, y = y, z = z)
         accelAngles = self.getAccelerometerAngles(x = x, y = y, z = z)
 
-        # Determine wether to initialize the Kalman angles from the
-        # accelerometer readings in the first iteration
-        if self.initFiltersFromAccel:
+        # Determine wether to initialize the complementary filter angles
+        # from the accelerometer readings in the first iteration
+        if self.initComplementaryFromAccel:
             self.complementaryAngles = list(accelAngles)
-            self.initFiltersFromAccel = False
+            self.initComplementaryFromAccel = False
 
         # Calculate complementary filtered angles
         self.complementaryAngles = [None if (gyrRates[i] is None or accelAngles[i] is None)
@@ -295,9 +297,9 @@ class AltIMU(object):
 
         # Determine wether to initialize the Kalman angles from the
         # accelerometer readings in the first iteration
-        if self.initFiltersFromAccel:
+        if self.initKalmanFromAccel:
             self.kalmanAngles = list(accelAngles)
-            self.initFiltersFromAccel = False
+            self.initKalmanFromAccel = False
 
         # Calculate gyroscope parts
         self.kalmanAngles = [None if gyrRates[i] is None
