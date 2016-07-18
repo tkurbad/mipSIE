@@ -106,11 +106,13 @@ class AltIMU(object):
                 autoIncrementRegisters = autoIncrementRegisters)
 
 
-    def calibrateGyroAngles(self, x = True, y = True, z = True):
+    def calibrateGyroAngles(self, x = 0.0, y = 0.0, z = 0.0):
         """ Calibrate (i.e. set to '0') the tracked gyroscope
             angles. (cf. self.trackGyroAngle())
         """
-        self.gyrXAngle = self.gyrYAngle = self.gyrZAngle = 0.0
+        self.gyrXAngle = x
+        self.gyrYAngle = y
+        self.gyrZAngle = z
 
 
     def getGyroRotationRate(self, x = True, y = True, z = True):

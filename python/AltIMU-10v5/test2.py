@@ -20,4 +20,11 @@ profile.disable()
 stream = StringIO()
 stats = Stats(profile, stream = stream).sort_stats('cumulative')
 stats.print_stats(0)
-import pdb; pdb.set_trace()
+
+stream.seek(0)
+looptime = float(stream.readline().split(' ')[-2]) / 1000.0
+
+imu.calibrateGyroAngles()
+
+for x in range(1000):
+    print "Gyro Angles:", imu.trackGyroAngle(deltaT = looptime)
