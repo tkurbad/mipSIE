@@ -104,7 +104,8 @@ class AltIMU(object):
     # Public methods
     def enable(self, accelerometer = True, barometer = True,
                gyroscope = True, magnetometer = True,
-               temperature = True, autoIncrementRegisters = True):
+               temperature = True, autoIncrementRegisters = True,
+               initKalmanFromAccel = True):
         """ Enable the given devices. """
         if accelerometer:
             self.accelerometer = True
@@ -116,6 +117,10 @@ class AltIMU(object):
             self.magnetometer = True
         if temperature:
             self.temperature = True
+
+        # Determine wether Kalman filter should be initialized with
+        # accelerometer readings
+        self.initKalmanFromAccel = initKalmanFromAccel
 
         # Enable LSM6DS33 if accelerometer and/or gyroscope are requested
         if self.accelerometer or self.gyroscope:
@@ -146,6 +151,11 @@ class AltIMU(object):
                 magnetometer = self.magnetometer,
                 temperature = self.temperature,
                 autoIncrementRegisters = autoIncrementRegisters)
+
+        # Disable Kalman filter initialization if accelerometer is
+        # deactivated.
+        if not self.accelerometer:
+            self.initKalmanFromAccel = False
 
 
     def calibrateGyroAngles(self, xCal = 0.0, yCal = 0.0, zCal = 0.0):
@@ -208,8 +218,12 @@ class AltIMU(object):
         return tuple(self.gyrAngles)
 
 
-    def getAccelerometerAngles(self, x = True, y = True, z = True):
-        """ Calculate accelerometer angles. """
+    def getAccelerometerAngles(self, x = True, y = True, z = True,
+        initKalman = False):
+        """ Calculate accelerometer angles.
+            If initKalman parameter is set to True, initialize Kalman
+            filter values with accelerometer readings.
+        """
         # If accelerometer is not enabled or none of the dimensions is
         # requested make a quick turnaround
         if not (self.accelerometer and (x or y or z)):
@@ -240,6 +254,12 @@ class AltIMU(object):
         # Get gyroscope rotation rates and accelerometer angles
         gyrRates = self.getGyroRotationRates(x = x, y = y, z = z)
         accelAngles = self.getAccelerometerAngles(x = x, y = y, z = z)
+
+        # Determine wether to initialize the Kalman angles from the
+        # accelerometer readings in the first iteration
+        if self.initKalmanFromAccel:
+            self.kalmanAngles = list(accelAngles)
+            self.initKalmanFromAccel = False
 
         # Calculate gyroscope parts
         self.kalmanAngles = [None if gyrRates[i] is None
