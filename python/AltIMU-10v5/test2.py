@@ -18,3 +18,4 @@ print angles
 
 for x in range(100):
     print "Accel:", imu.getAccelerometerAngles()
+    print "Kalman:", imu.getKalmanAngles()

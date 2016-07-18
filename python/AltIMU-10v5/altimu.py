@@ -32,6 +32,13 @@ class AltIMU(object):
     # Class variables and constants
     GYRO_GAIN = 0.0175    # Gyroscope dps/LSB for 500 dps full scale
 
+    # Used by the Kalman filter
+    Q_ANGLE   = 0.01
+    Q_GYRO    = 0.0003
+    R_ANGLE   = 0.01
+
+
+    # Private methods
     def __init__(self):
         """ Initialize some flags and values. """
         self.accelGyroSensor = None
@@ -46,7 +53,14 @@ class AltIMU(object):
 
         # Initialize tracked gyroscope angles
         self.gyrAngles = []
-        self.gyrCorrection = [0.0012, 0.00018, 0,00047]
+
+        ## Initialize Kalman filter variables
+        # Bias values for X, Y, and Z
+        self.kalmanBias = [0.0, 0.0, 0.0]
+        # State vectors for X, Y, and Z (XP_00, XP_01, XP_10, XP_11)
+        self.kalmanXP = self.kalmanYP = self.kalmanZP = [0.0, 0.0, 0.0, 0.0]
+        # Filtered angle values
+        self.kalmanAngles = [0.0, 0.0, 0.0]
 
 
     def __del__(self):
@@ -61,6 +75,33 @@ class AltIMU(object):
                     pass
 
 
+    def _calculateKalmanAngle(self, kalmanP, accelAngles, axis, deltaT):
+        """ Calculate Kalman filtered angle and return updated filter
+            matrix for one dimension.
+        """
+        kalmanP[0] += -deltaT * (kalmanP[1] + kalmanP[2]) + self.Q_ANGLE * deltaT
+        kalmanP[1] += -deltaT * kalmanP[3]
+        kalmanP[2] += -deltaT * kalmanP[3]
+        kalmanP[3] += self.Q_GYRO * deltaT
+
+        kalY = accelAngles[axis] - self.kalmanAngles[axis]
+        kalS = kalmanP[0] + self.R_ANGLE
+        kal0 = kalmanP[0] / kalS
+        kal1 = kalmanP[2] / kalS
+
+        # Set Kalman filtered angle
+        self.kalmanAngles[axis] +=  kal0 * kalY
+
+        self.kalmanBias[axis] +=  kal1 * kalY
+        kalmanP[0] -= kal0 * kalmanP[0]
+        kalmanP[1] -= kal0 * kalmanP[1]
+        kalmanP[2] -= kal1 * kalmanP[0]
+        kalmanP[3] -= kal1 * kalmanP[1]
+
+        return kalmanP
+
+
+    # Public methods
     def enable(self, accelerometer = True, barometer = True,
                gyroscope = True, magnetometer = True,
                temperature = True, autoIncrementRegisters = True):
@@ -138,7 +179,7 @@ class AltIMU(object):
         return tuple(gyrRates)
 
 
-    def trackGyroAngles(self, x = True, y = True, z = True, deltaT = 0.02):
+    def trackGyroAngles(self, x = True, y = True, z = True, deltaT = 0.0002):
         """ Track gyrometer angle change over time delta deltaT.
             deltaT has to be extremely accurate, otherwise the gyroscope
             values will drift.
@@ -185,3 +226,33 @@ class AltIMU(object):
 
         # Return vector
         return (accelXAngle, accelYAngle, accelZAngle)
+
+
+    def getKalmanAngles(self, x = True, y = True, z = True, deltaT = 0.01):
+        """ Calculate combined angles of accelerometer and gyroscope
+            using a Kalman filter.
+        """
+        # If accelerometer or gyroscope is not enabled or none of the
+        # dimensions is requested make a quick turnaround
+        if not (self.accelerometer and self.gyroscope and (x or y or z)):
+            return (None, None, None)
+
+        # Get gyroscope rotation rates and accelerometer angles
+        gyrRates = self.getGyroRotationRates(x = x, y = y, z = z)
+        accelAngles = self.getAccelerometerAngles(x = x, y = y, z = z)
+
+        # Calculate gyroscope parts
+        self.kalmanAngles = [None if gyrRates[i] is None
+                                else self.kalmanAngles[i] + (gyrRates[i] - self.kalmanBias[i]) * deltaT
+                                for i in range(3)]
+
+        # Calculate accelerometer parts
+        if x:
+            self._calculateKalmanAngle(self.kalmanXP, accelAngles, 0, deltaT)
+        if y:
+            self._calculateKalmanAngle(self.kalmanYP, accelAngles, 1, deltaT)
+        if z:
+            self._calculateKalmanAngle(self.kalmanZP, accelAngles, 2, deltaT)
+
+        # Return vector
+        return tuple(self.kalmanAngles)
