@@ -242,7 +242,7 @@ class AltIMU(object):
         return (accelXAngle, accelYAngle, accelZAngle)
 
 
-    def getKalmanAngles(self, x = True, y = True, z = True, deltaT = 0.01):
+    def getKalmanAngles(self, x = True, y = True, z = True, deltaT = 0.05):
         """ Calculate combined angles of accelerometer and gyroscope
             using a Kalman filter.
         """
