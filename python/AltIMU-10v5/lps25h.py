@@ -176,6 +176,7 @@ class LPS25H(I2C):
             # Now read all the pressure bytes in one go
             [pxl, pl, ph] = self._readRegister(
                 self.pressRegisters['pxl'], count = 3)
+            import pdb; pdb.set_trace()
 
             # Return the combined signed 24 bit value
             return self._combineSignedXLoLoHi(pxl, pl, ph)
