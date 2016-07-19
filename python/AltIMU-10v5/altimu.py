@@ -33,7 +33,7 @@ class AltIMU(object):
     GYRO_GAIN       = 0.0175  # Gyroscope dps/LSB for 500 dps full scale
 
     # Used by complementary filter
-    C_FILTER_CONST  = 0.98    # Complementary filter constant
+    C_FILTER_CONST  = 0.40    # Complementary filter constant
 
     # Used by the Kalman filter
     Q_ANGLE   = 0.01

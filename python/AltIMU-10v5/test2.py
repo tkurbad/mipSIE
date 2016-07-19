@@ -24,4 +24,4 @@ while True:
     start = datetime.now()
     print "Accel:", imu.getAccelerometerAngles()
     print "Compl:", imu.getComplementaryAngles(deltaT = stop.microseconds/1000000.0)
-    sleep(0.3)
+    sleep(0.5)
