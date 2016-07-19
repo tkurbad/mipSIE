@@ -19,9 +19,9 @@
 import math
 
 from constants import *
-from lis3mdl import LIS3MDL as Magnet
-from lps25h import LPS25H as BaroTemp
-from lsm6ds33 import LSM6DS33 as AccelGyro
+from lis3mdl import LIS3MDL
+from lps25h import LPS25H
+from lsm6ds33 import LSM6DS33
 
 
 # Code
