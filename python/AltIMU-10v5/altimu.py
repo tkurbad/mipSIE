@@ -116,7 +116,7 @@ class AltIMU(LIS3MDL, LPS25H, LSM6DS33):
         return [gyrRateX, gyrRateY, gyrRateZ]
 
 
-    def trackGyroAngles(self, deltaT = 0.0002):
+    def trackGyroAngles(self, deltaT = 0.02):
         """ Track gyrometer angle change over time delta deltaT.
             deltaT has to be extremely accurate, otherwise the gyroscope
             values will drift.

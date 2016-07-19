@@ -180,20 +180,20 @@ class LSM6DS33(I2C):
         self.lsmTempEnabled = False
 
         # Disable FIFO
-        self._writeRegister(LSM6DS33_ADDR, self.LSM_FIFO_CTRL5, 0x00)
+        #self._writeRegister(LSM6DS33_ADDR, self.LSM_FIFO_CTRL5, 0x00)
 
         if accelerometer:
             # Accelerometer
             # 1.66 kHz / +/- 4g
-            # 10001000b
-            self._writeRegister(LSM6DS33_ADDR, self.LSM_CTRL1_XL, 0x88)
+            # 01011000b
+            self._writeRegister(LSM6DS33_ADDR, self.LSM_CTRL1_XL, 0x58)
             self.accEnabled = True
 
         if gyroscope:
             # Gyro
-            # 1.66 kHz / 1000 dps
-            # 10001000b
-            self._writeRegister(LSM6DS33_ADDR, self.LSM_CTRL2_G, 0x88)
+            # 208 Hz high performance / 1000 dps
+            # 01011000b
+            self._writeRegister(LSM6DS33_ADDR, self.LSM_CTRL2_G, 0x58)
             self.gyroEnabled = True
 
         if temperature:
