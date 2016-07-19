@@ -108,9 +108,9 @@ class AltIMU(LIS3MDL, LPS25H, LSM6DS33):
         [gyrRawX, gyrRawY, gyrRawZ] = self.getGyroscopeRaw()
 
         # Calculate requested values
-        gyrRateX = gyrRawX * self.GYRO_GAIN
-        gyrRateY = gyrRawY * self.GYRO_GAIN
-        gyrRateZ = gyrRawZ * self.GYRO_GAIN
+        gyrRateX = gyrRawX * GYRO_GAIN
+        gyrRateY = gyrRawY * GYRO_GAIN
+        gyrRateZ = gyrRawZ * GYRO_GAIN
 
         # Return result vector
         return [gyrRateX, gyrRateY, gyrRateZ]
@@ -201,14 +201,14 @@ class AltIMU(LIS3MDL, LPS25H, LSM6DS33):
             # Gyroscope part
             kalmanAngle += (gyrRate - kalmanBias) * deltaT
 
-            kalmanP_00 += -deltaT * (kalmanP_01 + kalmanP_10) + self.Q_ANGLE * deltaT
+            kalmanP_00 += -deltaT * (kalmanP_01 + kalmanP_10) + K_Q_ANGLE * deltaT
             kalmanP_01 += -deltaT * kalmanP_11
             kalmanP_10 += -deltaT * kalmanP_11
-            kalmanP_11 += self.Q_GYRO * deltaT
+            kalmanP_11 += K_Q_GYRO * deltaT
 
             # Accelerometer part
             kalY = accAngle - kalmanAngle
-            kalS = kalmanP_00 + self.R_ANGLE
+            kalS = kalmanP_00 + K_R_ANGLE
             kal0 = kalmanP_00 / kalS
             kal1 = kalmanP_10 / kalS
 
