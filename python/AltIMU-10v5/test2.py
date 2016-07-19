@@ -21,6 +21,8 @@ start = datetime.now()
 while True:
     stop = datetime.now() - start
     start = datetime.now()
+    deltaT = stop.microseconds/1000000.0
+    print "Loop:", 
     print "Accel:", imu.getAccelerometerAngles()
-    print "Gyro:", imu.trackGyroAngles(deltaT = stop.microseconds/1000000.0)
+    print "Gyro:", imu.trackGyroAngles(deltaT = deltaT)
     sleep(0.5)
