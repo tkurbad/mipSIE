@@ -139,6 +139,9 @@ class LSM6DS33(I2C):
         th = OUT_TEMP_H,     # high byte of temperature value
     )
 
+    # Gyroscope dps/LSB for 1000 dps full scale
+    GYRO_GAIN       = 0.035
+
 
     ##
     ## Class methods
@@ -266,16 +269,16 @@ class LSM6DS33(I2C):
 
         if accelerometer:
             # Accelerometer
-            # 1.66 kHz / +/- 8g
-            # 10001100b
-            self._writeRegister(self.CTRL1_XL, 0x8c)
+            # 1.66 kHz / +/- 4g
+            # 10001000b
+            self._writeRegister(self.CTRL1_XL, 0x88)
             self.accEnabled = True
 
         if gyroscope:
             # Gyro
-            # 1.66 kHz / 500 dps
-            # 10000100b
-            self._writeRegister(self.CTRL2_G, 0x84)
+            # 1.66 kHz / 1000 dps
+            # 10001000b
+            self._writeRegister(self.CTRL2_G, 0x88)
             self.gyroEnabled = True
 
         if temperature:

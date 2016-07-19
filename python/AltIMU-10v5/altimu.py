@@ -30,7 +30,6 @@ class AltIMU(object):
     """ Class to control Pololu's AltIMU-10v5. """
 
     # Class variables and constants
-    GYRO_GAIN       = 0.0175  # Gyroscope dps/LSB for 500 dps full scale
 
     # Used by complementary filter
     C_FILTER_CONST  = 0.40    # Complementary filter constant
@@ -189,7 +188,7 @@ class AltIMU(object):
 
         # Calculate requested values
         gyrRates = [None if gyrRawDimension is None
-                        else gyrRawDimension * self.GYRO_GAIN
+                        else gyrRawDimension * self.accelGyroSensor.GYRO_GAIN
                         for gyrRawDimension in gyrRaw]
 
         # Return result vector
