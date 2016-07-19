@@ -23,6 +23,8 @@
 # Imports
 from i2c import I2C
 
+from constants import *
+
 
 # Code
 class LPS25H(I2C):
@@ -36,69 +38,63 @@ class LPS25H(I2C):
 
     # Register addresses
     #  ([+] = used in the code, [-] = not used or useful, [ ] = TBD)
-    REF_P_XL        = 0x08  # [ ] Reference pressure, lowest byte
-    REF_P_L         = 0x09  # [ ] Reference pressure, low byte
-    REF_P_H         = 0x0A  # [ ] Reference pressure, high byte
+    LPS_REF_P_XL        = 0x08  # [ ] Reference pressure, lowest byte
+    LPS_REF_P_L         = 0x09  # [ ] Reference pressure, low byte
+    LPS_REF_P_H         = 0x0A  # [ ] Reference pressure, high byte
 
-    WHO_AM_I        = 0x0F  # [-] Returns 0xbd (read only)
+    LPS_WHO_AM_I        = 0x0F  # [-] Returns 0xbd (read only)
 
-    RES_CONF        = 0x10  # [ ] Set pressure and temperature resolution
+    LPS_RES_CONF        = 0x10  # [ ] Set pressure and temperature resolution
 
-    CTRL_REG1       = 0x20  # [+] Set device power mode / ODR / BDU
-    CTRL_REG2       = 0x21  # [-] FIFO / I2C configuration
-    CTRL_REG3       = 0x22  # [-] Interrupt configuration
-    CTRL_REG4       = 0x23  # [-] Interrupt configuration
+    LPS_CTRL_REG1       = 0x20  # [+] Set device power mode / ODR / BDU
+    LPS_CTRL_REG2       = 0x21  # [-] FIFO / I2C configuration
+    LPS_CTRL_REG3       = 0x22  # [-] Interrupt configuration
+    LPS_CTRL_REG4       = 0x23  # [-] Interrupt configuration
               
-    INTERRUPT_CFG   = 0x24  # [-] Interrupt configuration
-    INT_SOURCE      = 0x25  # [-] Interrupt source configuration
+    LPS_INTERRUPT_CFG   = 0x24  # [-] Interrupt configuration
+    LPS_INT_SOURCE      = 0x25  # [-] Interrupt source configuration
 
-    STATUS_REG      = 0x27  # [ ] Status (new pressure/temperature data
+    LPS_STATUS_REG      = 0x27  # [ ] Status (new pressure/temperature data
                             #     available)
                             
-    PRESS_OUT_XL    = 0x28  # [+] Pressure output, loweste byte
-    PRESS_OUT_L     = 0x29  # [+] Pressure output, low byte
-    PRESS_OUT_H     = 0x2A  # [+] Pressure output, high byte
+    LPS_PRESS_OUT_XL    = 0x28  # [+] Pressure output, loweste byte
+    LPS_PRESS_OUT_L     = 0x29  # [+] Pressure output, low byte
+    LPS_PRESS_OUT_H     = 0x2A  # [+] Pressure output, high byte
 
-    TEMP_OUT_L      = 0x2B  # [+] Temperature output, low byte
-    TEMP_OUT_H      = 0x2C  # [+] Temperature output, high byte
+    LPS_TEMP_OUT_L      = 0x2B  # [+] Temperature output, low byte
+    LPS_TEMP_OUT_H      = 0x2C  # [+] Temperature output, high byte
       
-    FIFO_CTRL       = 0x2E  # [ ] FIFO control / mode selection
-    FIFO_STATUS     = 0x2F  # [-] FIFO status
-      
-    THS_P_L         = 0x30  # [-] Pressure interrupt threshold, low byte
-    THS_P_H         = 0x31  # [-] Pressure interrupt threshold, high byte
+    LPS_FIFO_CTRL       = 0x2E  # [ ] FIFO control / mode selection
+    LPS_FIFO_STATUS     = 0x2F  # [-] FIFO status
+
+    LPS_THS_P_L         = 0x30  # [-] Pressure interrupt threshold, low byte
+    LPS_THS_P_H         = 0x31  # [-] Pressure interrupt threshold, high byte
 
     # The next two registers need special soldering and are not
     # available on the AltIMU
-    RPDS_L          = 0x39  # [-] Pressure offset for differential
+    LPS_RPDS_L          = 0x39  # [-] Pressure offset for differential
                             #     pressure computing, low byte
-    RPDS_H          = 0x3A  # [-] Differential offset, high byte
+    LPS_RPDS_H          = 0x3A  # [-] Differential offset, high byte
 
     # Registers used for reference pressure
-    refRegisters = dict(
-        rxl = REF_P_XL, # lowest byte of reference pressure value
-        rl  = REF_P_L,  # low byte of reference pressure value
-        rh  = REF_P_H,  # high byte of reference pressure value
-    )
+    refRegisters = [
+        LPS_REF_P_XL, # lowest byte of reference pressure value
+        LPS_REF_P_L,  # low byte of reference pressure value
+        LPS_REF_P_H,  # high byte of reference pressure value
+    ]
 
     # Output registers used by the pressure sensor
-    pressRegisters = dict (
-        pxl = PRESS_OUT_XL, # lowest byte of pressure value
-        pl  = PRESS_OUT_L,  # low byte of pressure value
-        ph  = PRESS_OUT_H,  # high byte of pressure value
-    )
+    pressRegisters = [
+        LPS_PRESS_OUT_XL, # lowest byte of pressure value
+        LPS_PRESS_OUT_L,  # low byte of pressure value
+        LPS_PRESS_OUT_H,  # high byte of pressure value
+    ]
 
     # Output registers used by the temperature sensor
-    tempRegisters = dict (
-        tl = TEMP_OUT_L, # low byte of temperature value
-        th = TEMP_OUT_H, # high byte of temperature value
-    )
-
-    # Output registers used by the temperature sensor
-    tempRegisters = dict (
-        tl = TEMP_OUT_L, # low byte of temperature value
-        th = TEMP_OUT_H, # high byte of temperature value
-    )
+    lpsTempRegisters = [
+        LPS_TEMP_OUT_L, # low byte of temperature value
+        LPS_TEMP_OUT_H, # high byte of temperature value
+    ]
 
 
     ##
@@ -106,14 +102,11 @@ class LPS25H(I2C):
     ##
 
     ## Private methods
-    def __init__(self, busId = 1, address = 0x5d):
-        """ Initialize the I2C bus and store device slave address.
-            Set initial sensor activation flags to False.
+    def __init__(self, busId = 1):
+        """ Set up I2C connection and initialize some flags and values.
         """
-        super(LPS25H, self).__init__(busId, address)
-        self._autoIncrementRegisters = False
+        super(LPS25H, self).__init__(busId)
         self.pressEnabled = False
-        self.tempEnabled = False
 
 
     def __del__(self):
@@ -127,95 +120,47 @@ class LPS25H(I2C):
 
 
     ## Public methods
-    def enable(self, barometer = True, temperature = True,
-               autoIncrementRegisters = True):
-        """ Enable and set up the given sensors in the IMU device and
-            determine whether to auto increment registers during I2C
-            read operations.
-        """
+    def enableLPS(self):
+        """ Enable and set up the given sensors in the IMU device. """
         # Power down device first
         self._writeRegister(self.CTRL_REG1, 0x00)
 
-        # Initialize flags
-        self._autoIncrementRegisters = False
-        self.pressEnabled = False
-        self.tempEnabled = False
+        # Barometer and temperature sensor
+        # (Both sensors are enabled together on the LPS25H)
+        # CTRL_REG1
+        # Power up
+        # Output data rate for both sensors 12.5Hz
+        # 10110000
+        self._writeRegister(self.CTRL_REG1, 0xb0)
 
-        if barometer or temperature:
-            # Barometer and temperature sensor
-            # (Both sensors are enabled together on the LPS25H)
-            # CTRL_REG1
-            # Power up
-            # Output data rate for both sensors 12.5Hz
-            # 10110000
-            self._writeRegister(self.CTRL_REG1, 0xb0)
-
-            self.pressEnabled = True
-            self.tempEnabled = True
-
-        if autoIncrementRegisters:
-            # Auto increment register address during read
-            # There is no control register for this setting on the
-            # LPS25H. Instead, this feature is enabled by doing a raw
-            # write to the desired start register | 0x80.
-            self._autoIncrementRegisters = True
+        self.pressEnabled = True
 
 
     def getBarometerRaw(self):
-        """ Return the raw pressure sensor data.
-        """
+        """ Return the raw pressure sensor data. """
         # Check if barometer has been enabled
         if not self.pressEnabled:
             raise(Exception('Barometer has to be enabled first'))
 
-        if self._autoIncrementRegisters:
-            # To read all the pressure bytes in one go, the start
-            # register has to be ORed by 0x80 (10000000b)
-            [pxl, pl, ph] = self._readRegister(
-                (self.pressRegisters['pxl'] | 0x80), count = 3)
-
-            # Return the combined signed 24 bit value
-            return self._combineSignedXLoLoHi(pxl, pl, ph)
-
-        ## In case auto increment of registers is not enabled we have to
-        #  read all registers consecutively.
-        pxl = self._readRegister(self.pressRegisters['pxl'])
-        pl = self._readRegister(self.pressRegisters['pl'])
-        ph = self._readRegister(self.pressRegisters['ph'])
-
-        # Return the combined signed 24 bit value
-        return self._combineSignedXLoLoHi(pxl, pl, ph)
+        # Return sensor data as signed 24 bit value
+        return self._getSensorRawXLoLoHi1(LPS25H_ADDR, self.pressRegisters)
 
 
-    def getTemperatureRaw(self):
+    def getLPSTemperatureRaw(self):
         """ Return the raw temperature value. """
         # Check if device has been set up
-        if not self.tempEnabled:
+        if not self.pressEnabled:
             raise(Exception('Temperature sensor has to be enabled first'))
 
-        if self._autoIncrementRegisters:
-            # To read both temperature bytes in one go, the start
-            # register has to be ORed by 0x80 (10000000b)
-            [tl, th] = self._readRegister(
-                (self.tempRegisters['tl'] | 0x80), count = 2)
-
-            # Return combined signed 16 bit value
-            return self._combineSignedLoHi(tl, th)
-
-        ## In case auto increment of registers is not enabled we have to
-        #  read all registers consecutively.
-        tl = self._readRegister(self.tempRegisters['tl'])
-        th = self._readRegister(self.tempRegisters['th'])
-
-        # Return combined result
-        return self._combineSignedLoHi(tl, th)
+        # Return sensor data as signed 16 bit value
+        return self._getSensorRawLoHi1(LPS25H_ADDR, self.lpsTempRegisters)
 
 
-    def getAllRaw(self, x = True, y = True, z = True):
-        """ Return a tuple of the raw output of the two sensors,
+    def getAllRaw(self):
+        """ Return a list of the raw output of the two sensors,
             pressure and temperature.
         """
-        return (self.getBarometerRaw(), self.getTemperatureRaw(), )
+        return [self.getBarometerRaw(), self.getTemperatureRaw()]
 
 
     def getBarometerMillibars(self, rounded = True):
@@ -227,7 +172,7 @@ class LPS25H(I2C):
         return self.getBarometerRaw() / 4096.0
 
 
-    def getTemperatureCelsius(self, rounded = True):
+    def getLPSTemperatureCelsius(self, rounded = True):
         """ Return the temperature sensor reading in C as a floating
             point number rounded to one decimal place.
         """
@@ -237,8 +182,8 @@ class LPS25H(I2C):
         # Thus, the following statement should return the temperature in
         # degrees Celsius.
         if rounded:
-            return round(42.5 + self.getTemperatureRaw() / 480.0, 1)
-        return 42.5 + self.getTemperatureRaw() / 480.0
+            return round(42.5 + self.getLPSTemperatureRaw() / 480.0, 1)
+        return 42.5 + self.getLPSTemperatureRaw() / 480.0
 
 
     def getAltitude(self, altimeterMbar = 1013.25, rounded = True):

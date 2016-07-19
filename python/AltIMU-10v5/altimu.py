@@ -18,150 +18,77 @@
 # Imports
 import math
 
-from time import sleep
-
+from constants import *
 from lis3mdl import LIS3MDL as Magnet
 from lps25h import LPS25H as BaroTemp
 from lsm6ds33 import LSM6DS33 as AccelGyro
 
 
 # Code
-class AltIMU(object):
+class AltIMU(LIS3MDL, LPS25H, LSM6DS33):
     """ Class to control Pololu's AltIMU-10v5. """
 
-    # Class variables and constants
-
-    # Used by complementary filter
-    C_FILTER_CONST  = 0.40    # Complementary filter constant
-
-    # Used by the Kalman filter
-    Q_ANGLE   = 0.01
-    Q_GYRO    = 0.0003
-    R_ANGLE   = 0.01
-
-
     # Private methods
-    def __init__(self):
+    def __init__(self, busId = 1):
         """ Initialize some flags and values. """
-        self.accelGyroSensor = None
-        self.baroTempSensor = None
-        self.magnetSensor = None
-
-        self.accelerometer = False
-        self.barometer = False
-        self.gyroscope = False
-        self.magnetometer = False
-        self.temperature = False
+        super(AltIMU, self).__init__()
 
         # Initialize tracked gyroscope angles
-        self.gyrAngles = []
+        self.gyrAngleX = 0.0
+        self.gyrAngleY = 0.0
+        self.gyrAngleZ = 0.0
 
         ## Initialize Kalman filter variables
         # Bias values for X, Y, and Z
-        self.kalmanBias = [0.0, 0.0, 0.0]
+        self.kalmanBiasX = 0.0
+        self.kalmanBiasY = 0.0
+        self.kalmanBiasZ = 0.0
         # State vectors for X, Y, and Z (XP_00, XP_01, XP_10, XP_11)
-        self.kalmanXP = self.kalmanYP = self.kalmanZP = [0.0, 0.0, 0.0, 0.0]
+        self.kalmanXP_00 = self.kalmanXP_01 = 0.0
+        self.kalmanXP_10 = self.kalmanXP_11 = 0.0
+        self.kalmanYP_00 = self.kalmanYP_01 = 0.0
+        self.kalmanYP_10 = self.kalmanYP_11 = 0.0
+        self.kalmanZP_00 = self.kalmanZP_01 = 0.0
+        self.kalmanZP_10 = self.kalmanZP_11 = 0.0
         # Kalman filtered angle values
-        self.kalmanAngles = [0.0, 0.0, 0.0]
+        self.kalmanAngleX = 0.0
+        self.kalmanAngleY = 0.0
+        self.kalmanAngleZ = 0.0
 
         ## Initialize complementary filter variables
-        self.complementaryAngles = [0.0, 0.0, 0.0]
+        self.complementaryAngleX = 0.0
+        self.complementaryAngleY = 0.0
+        self.complementaryAngleZ = 0.0
 
     def __del__(self):
         """ Cleanup routine. """
-        for device in [self.accelGyroSensor,
-                       self.baroTempSensor,
-                       self.magnetSensor]:
-            if device is not None:
-                try:
-                    del(device)
-                except:
-                    pass
-
-
-    def _calculateKalmanAngle(self, kalmanP, accelAngles, axis, deltaT):
-        """ Calculate Kalman filtered angle and return updated filter
-            matrix for one dimension.
-        """
-        kalmanP[0] += -deltaT * (kalmanP[1] + kalmanP[2]) + self.Q_ANGLE * deltaT
-        kalmanP[1] += -deltaT * kalmanP[3]
-        kalmanP[2] += -deltaT * kalmanP[3]
-        kalmanP[3] += self.Q_GYRO * deltaT
-
-        kalY = accelAngles[axis] - self.kalmanAngles[axis]
-        kalS = kalmanP[0] + self.R_ANGLE
-        kal0 = kalmanP[0] / kalS
-        kal1 = kalmanP[2] / kalS
-
-        # Set Kalman filtered angle
-        self.kalmanAngles[axis] +=  kal0 * kalY
-
-        self.kalmanBias[axis] +=  kal1 * kalY
-        kalmanP[0] -= kal0 * kalmanP[0]
-        kalmanP[1] -= kal0 * kalmanP[1]
-        kalmanP[2] -= kal1 * kalmanP[0]
-        kalmanP[3] -= kal1 * kalmanP[1]
-
-        return kalmanP
+        super(AltIMU, self).__del__()
 
 
     # Public methods
     def enable(self, accelerometer = True, barometer = True,
                gyroscope = True, magnetometer = True,
-               temperature = True, autoIncrementRegisters = True,
-               initFiltersFromAccel = True):
+               temperature = True):
         """ Enable the given devices. """
-        if accelerometer:
-            self.accelerometer = True
-        if barometer:
-            self.barometer = True
-        if gyroscope:
-            self.gyroscope = True
-        if magnetometer:
-            self.magnetometer = True
-        if temperature:
-            self.temperature = True
-
-        # Determine wether Kalman/complementary filters should be
-        # initialized with accelerometer readings
-        self.initComplementaryFromAccel = initFiltersFromAccel
-        self.initKalmanFromAccel = initFiltersFromAccel
-
         # Enable LSM6DS33 if accelerometer and/or gyroscope are requested
-        if self.accelerometer or self.gyroscope:
-            self.accelGyroSensor = AccelGyro()
-            self.accelGyroSensor.enable(
-                accelerometer = self.accelerometer,
-                gyroscope = self.gyroscope,
-                temperature = self.temperature,
-                autoIncrementRegisters = autoIncrementRegisters)
+        if accelerometer or gyroscope:
+            self.enableLSM(accelerometer = accelerometer,
+                           gyroscope = gyroscope
+                           temperature = temperature)
 
-            if self.gyroscope:
+            if gyroscope:
                 # "calibrate" tracked gyroscope angles
                 self.calibrateGyroAngles()
 
         # Enable LPS25H if barometric pressure or temperature sensors
         # are requested
-        if self.barometer or self.temperature:
-            self.baroTempSensor = BaroTemp()
-            self.baroTempSensor.enable(
-                barometer = self.barometer,
-                temperature = self.temperature,
-                autoIncrementRegisters = autoIncrementRegisters)
+        if barometer or temperature:
+            self.enableLPS()
 
         # Enable LIS3MDL if magnetometer is requested
-        if self.magnetometer:
-            self.magnetSensor = Magnet()
-            self.magnetSensor.enable(
-                magnetometer = self.magnetometer,
-                temperature = self.temperature,
-                autoIncrementRegisters = autoIncrementRegisters)
-
-        # Disable Kalman filter initialization if accelerometer is
-        # deactivated.
-        if not self.accelerometer:
-            self.initComplementaryFromAccel = False
-            self.initKalmanFromAccel = False
+        if magnetometer:
+            self.enableLIS(magnetometer = magnetometer,
+                           temperature = temperature)
 
 
     def calibrateGyroAngles(self, xCal = 0.0, yCal = 0.0, zCal = 0.0):
@@ -171,73 +98,46 @@ class AltIMU(object):
         self.gyrAngles = [xCal, yCal, zCal]
 
 
-    def getGyroRotationRates(self, x = True, y = True, z = True):
+    def getGyroRotationRates(self):
         """ Get the rotation rate of the gyroscope for the requested
-            axes. The result is returned as a vector (3-tuple) of
+            axes. The result is returned as a vector (list) of
             floating point numbers representing the angular velocity
             in degrees/second.
         """
-        # If gyroscope is not enabled or none of the dimensions is
-        # requested make a quick turnaround
-        if not (self.gyroscope and (x or y or z)):
-            return (None, None, None)
-
         # Get raw data from gyroscope
-        gyrRaw = self.accelGyroSensor.getGyroscopeRaw(
-                                        x = x, y = y, z = z)
+        [gyrRawX, gyrRawY, gyrRawZ] = self.getGyroscopeRaw()
 
         # Calculate requested values
-        gyrRates = [None if gyrRawDimension is None
-                        else gyrRawDimension * self.accelGyroSensor.GYRO_GAIN
-                        for gyrRawDimension in gyrRaw]
+        gyrRateX = gyrRawX * self.GYRO_GAIN
+        gyrRateY = gyrRawY * self.GYRO_GAIN
+        gyrRateZ = gyrRawZ * self.GYRO_GAIN
 
         # Return result vector
-        return tuple(gyrRates)
+        return [gyrRateX, gyrRateY, gyrRateZ]
 
 
-    def trackGyroAngles(self, x = True, y = True, z = True, deltaT = 0.0002):
+    def trackGyroAngles(self, deltaT = 0.0002):
         """ Track gyrometer angle change over time delta deltaT.
             deltaT has to be extremely accurate, otherwise the gyroscope
             values will drift.
-            The result is returned as a vector (3-tuple) of floating
+            The result is returned as a vector (list) of floating
             point numbers representing the angle in degrees.
         """
-        # Assert if angles had been calibrated
-        try:
-            assert(len(self.gyrAngles) == 3)
-        except AssertionError, e:
-            raise(Exception('Gyroscope must be calibrated before angle tracking!'))
-
-        # If gyroscope is not enabled or none of the dimensions is
-        # requested make a quick turnaround
-        if not (self.gyroscope and (x or y or z)):
-            return tuple(self.gyrAngles)
-
         # Get current gyroscope rotation rate
-        gyrRates = self.getGyroRotationRates(x = x, y = y, z = z)
+        [gyrRateX, gyrRateY, gyrRateZ] = self.getGyroRotationRates()
 
         # Sum up and multiply by deltaT for angle tracking
-        self.gyrAngles = [self.gyrAngles[i] if gyrRates is None
-                            else self.gyrAngles[i] + gyrRates[i] * deltaT
-                            for i in range(3)]
+        self.gyrAngleX += gyrRateX * deltaT
+        self.gyrAngleY += gyrRateY * deltaT
+        self.gyrAngleZ += gyrRateZ * deltaT
 
-        return tuple(self.gyrAngles)
+        return [self.gyrAngleX, self.gyrAngleY, self.gyrAngleZ]
 
 
-    def getAccelerometerAngles(self, x = True, y = True, z = True,
-        initKalman = False):
-        """ Calculate accelerometer angles.
-            If initKalman parameter is set to True, initialize Kalman
-            filter values with accelerometer readings.
-        """
-        # If accelerometer is not enabled or none of the dimensions is
-        # requested make a quick turnaround
-        if not (self.accelerometer and (x or y or z)):
-            return (None, None, None)
-
+    def getAccelerometerAngles(self):
+        """ Calculate accelerometer angles. """
         # Get raw accelerometer data
-        (accelXRaw, accelYRaw, accelZRaw) = self.accelGyroSensor.getAccelerometerRaw(
-                                                x = x, y = y, z = z)
+        [accelXRaw, accelYRaw, accelZRaw] = self.accelGyroSensor.getAccelerometerRaw()
 
         # Calculate angles
         accelXAngle = math.degrees(math.atan2(accelYRaw, accelZRaw) + math.pi)
@@ -245,10 +145,10 @@ class AltIMU(object):
         accelZAngle = math.degrees(math.atan2(accelXRaw, accelYRaw) + math.pi)
 
         # Return vector
-        return (accelXAngle, accelYAngle, accelZAngle)
+        return [accelXAngle, accelYAngle, accelZAngle]
 
 
-    def getComplementaryAngles(self, x = True, y = True, z = True, deltaT = 0.05):
+    def getComplementaryAngles(self, deltaT = 0.05):
         """ Calculate combined angles of accelerometer and gyroscope
             using a complementary filter.
             Note: This filter is very cheap CPU-wise, but the result
@@ -256,18 +156,18 @@ class AltIMU(object):
         """
         # If accelerometer or gyroscope is not enabled or none of the
         # dimensions is requested make a quick turnaround
-        if not (self.accelerometer and self.gyroscope and (x or y or z)):
-            return (None, None, None)
+        #if not (self.accelerometer and self.gyroscope and (x or y or z)):
+        #    return (None, None, None)
         
         # Get gyroscope rotation rates and accelerometer angles
-        gyrRates = self.getGyroRotationRates(x = x, y = y, z = z)
-        accelAngles = self.getAccelerometerAngles(x = x, y = y, z = z)
+        gyrRates = self.getGyroRotationRates()
+        accelAngles = self.getAccelerometerAngles()
 
         # Determine wether to initialize the complementary filter angles
         # from the accelerometer readings in the first iteration
-        if self.initComplementaryFromAccel:
-            self.complementaryAngles = list(accelAngles)
-            self.initComplementaryFromAccel = False
+        #if self.initComplementaryFromAccel:
+        #    self.complementaryAngles = list(accelAngles)
+        #    self.initComplementaryFromAccel = False
 
         # Calculate complementary filtered angles
         self.complementaryAngles = [None if (gyrRates[i] is None or accelAngles[i] is None)
@@ -279,39 +179,113 @@ class AltIMU(object):
         return tuple(self.complementaryAngles)
 
 
-    def getKalmanAngles(self, x = True, y = True, z = True, deltaT = 0.05):
+    def getKalmanAngles(self, deltaT = 0.05):
         """ Calculate combined angles of accelerometer and gyroscope
             using a Kalman filter.
             Note: This filter is complex, but eliminates gyroscope drift
             altogether.
         """
+        def _calculateKalmanAngle(kalmanP_00,
+                                  kalmanP_01,
+                                  kalmanP_10,
+                                  kalmanP_11,
+                                  gyrRate,
+                                  accAngle,
+                                  kalmanBias,
+                                  kalmanAngle,
+                                  deltaT):
+            """ Calculate Kalman filtered angle and return updated filter
+                matrix for one dimension.
+            """
+
+            # Gyroscope part
+            kalmanAngle += (gyrRate - kalmanBias) * deltaT
+
+            kalmanP_00 += -deltaT * (kalmanP_01 + kalmanP_10) + self.Q_ANGLE * deltaT
+            kalmanP_01 += -deltaT * kalmanP_11
+            kalmanP_10 += -deltaT * kalmanP_11
+            kalmanP_11 += self.Q_GYRO * deltaT
+
+            # Accelerometer part
+            kalY = accAngle - kalmanAngle
+            kalS = kalmanP_00 + self.R_ANGLE
+            kal0 = kalmanP_00 / kalS
+            kal1 = kalmanP_10 / kalS
+
+            # Set Kalman filtered angle
+            kalmanAngle +=  kal0 * kalY
+
+            # Re-calculate Kalman parameters
+            kalmanBias +=  kal1 * kalY
+            kalmanP_00 -= kal0 * kalmanP_00
+            kalmanP_01 -= kal0 * kalmanP_01
+            kalmanP_10 -= kal1 * kalmanP_10
+            kalmanP_11 -= kal1 * kalmanP_11
+
+            return (kalmanP_00, kalmanP_01, kalmanP_10, kalmanP_11,
+                    kalmanBias, kalmanAngle)
+
         # If accelerometer or gyroscope is not enabled or none of the
         # dimensions is requested make a quick turnaround
-        if not (self.accelerometer and self.gyroscope and (x or y or z)):
-            return (None, None, None)
+        #if not (self.accelerometer and self.gyroscope and (x or y or z)):
+        #    return (None, None, None)
 
         # Get gyroscope rotation rates and accelerometer angles
-        gyrRates = self.getGyroRotationRates(x = x, y = y, z = z)
-        accelAngles = self.getAccelerometerAngles(x = x, y = y, z = z)
+        [gyrRateX, gyrRateY, gyrRateZ] = self.getGyroRotationRates()
+        [accAngleX, accAngleY, accAngleZ] = self.getAccelerometerAngles()
 
         # Determine wether to initialize the Kalman angles from the
         # accelerometer readings in the first iteration
-        if self.initKalmanFromAccel:
-            self.kalmanAngles = list(accelAngles)
-            self.initKalmanFromAccel = False
+        #if self.initKalmanFromAccel:
+        #    self.kalmanAngles = list(accelAngles)
+        #    self.initKalmanFromAccel = False
 
-        # Calculate gyroscope parts
-        self.kalmanAngles = [None if gyrRates[i] is None
-                                else self.kalmanAngles[i] + (gyrRates[i] - self.kalmanBias[i]) * deltaT
-                                for i in range(3)]
+        # X axis
+        (self.kalmanXP_00,
+         self.kalmanXP_01,
+         self.kalmanXP_10,
+         self.kalmanXP_11,
+         self.kalmanBiasX,
+         self.kalmanX) = _calculateKalmanAngle(accAngleX,
+                                               gyrRateX,
+                                               self.kalmanXP_00,
+                                               self.kalmanXP_01,
+                                               self.kalmanXP_10,
+                                               self.kalmanXP_11,
+                                               self.kalmanBiasX,
+                                               self.kalmanX,
+                                               deltaT)
 
-        # Calculate accelerometer parts
-        if x:
-            self._calculateKalmanAngle(self.kalmanXP, accelAngles, 0, deltaT)
-        if y:
-            self._calculateKalmanAngle(self.kalmanYP, accelAngles, 1, deltaT)
-        if z:
-            self._calculateKalmanAngle(self.kalmanZP, accelAngles, 2, deltaT)
+        # Y axis
+        (self.kalmanYP_00,
+         self.kalmanYP_01,
+         self.kalmanYP_10,
+         self.kalmanYP_11,
+         self.kalmanBiasY,
+         self.kalmanY) = _calculateKalmanAngle(accAngleY,
+                                               gyrRateY,
+                                               self.kalmanYP_00,
+                                               self.kalmanYP_01,
+                                               self.kalmanYP_10,
+                                               self.kalmanYP_11,
+                                               self.kalmanBiasY,
+                                               self.kalmanY,
+                                               deltaT)
+        # Z axis
+        (self.kalmanZP_00,
+         self.kalmanZP_01,
+         self.kalmanZP_10,
+         self.kalmanZP_11,
+         self.kalmanBiasZ,
+         self.kalmanZ) = _calculateKalmanAngle(accAngleZ,
+                                               gyrRateZ,
+                                               self.kalmanZP_00,
+                                               self.kalmanZP_01,
+                                               self.kalmanZP_10,
+                                               self.kalmanZP_11,
+                                               self.kalmanBiasZ,
+                                               self.kalmanZ,
+                                               deltaT)
 
         # Return vector
-        return tuple(self.kalmanAngles)
+        return [self.kalmanX, self.kalmanY, self.kalmanZ]

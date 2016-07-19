@@ -6,7 +6,7 @@ from time import sleep
 from altimu import AltIMU
 
 imu = AltIMU()
-imu.enable(autoIncrementRegisters = False)
+imu.enable()
 
 imu.calibrateGyroAngles()
 
