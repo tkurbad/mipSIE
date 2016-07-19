@@ -26,4 +26,4 @@ while True:
     print "Loop:", deltaT
     print "Accel:", imu.getAccelerometerAngles()
     print "Gyro:", imu.trackGyroAngles(deltaT = deltaT)
-    sleep(0.5)
+    sleep(0.02)
