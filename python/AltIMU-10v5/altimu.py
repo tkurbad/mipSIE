@@ -137,7 +137,7 @@ class AltIMU(LIS3MDL, LPS25H, LSM6DS33):
     def getAccelerometerAngles(self):
         """ Calculate accelerometer angles. """
         # Get raw accelerometer data
-        [accelXRaw, accelYRaw, accelZRaw] = self.accelGyroSensor.getAccelerometerRaw()
+        [accelXRaw, accelYRaw, accelZRaw] = self.getAccelerometerRaw()
 
         # Calculate angles
         accelXAngle = math.degrees(math.atan2(accelYRaw, accelZRaw) + math.pi)
