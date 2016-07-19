@@ -123,7 +123,7 @@ class LPS25H(I2C):
     def enableLPS(self):
         """ Enable and set up the given sensors in the IMU device. """
         # Power down device first
-        self._writeRegister(self.CTRL_REG1, 0x00)
+        self._writeRegister(self.LPS_CTRL_REG1, 0x00)
 
         # Barometer and temperature sensor
         # (Both sensors are enabled together on the LPS25H)
@@ -131,7 +131,7 @@ class LPS25H(I2C):
         # Power up
         # Output data rate for both sensors 12.5Hz
         # 10110000
-        self._writeRegister(self.CTRL_REG1, 0xb0)
+        self._writeRegister(self.LPS_CTRL_REG1, 0xb0)
 
         self.pressEnabled = True
 

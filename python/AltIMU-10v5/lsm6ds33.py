@@ -157,9 +157,9 @@ class LSM6DS33(I2C):
         """ Clean up routines. """
         try:
             # Power down accelerometer
-            self._writeRegister(self.CTRL1_XL, 0x00)
+            self._writeRegister(self.LSM_CTRL1_XL, 0x00)
             # Power down gyroscope
-            self._writeRegister(self.CTRL2_G, 0x00)
+            self._writeRegister(self.LSM_CTRL2_G, 0x00)
             super(LSM6DS33, self).__del__()
         except:
             pass
@@ -170,9 +170,9 @@ class LSM6DS33(I2C):
                   temperature = True):
         """ Enable and set up the given sensors in the IMU device. """
         # Disable accelerometer and gyroscope first
-        self._writeRegister(self.CTRL1_XL, 0x00)
-        self._writeRegister(self.CTRL2_G, 0x00)
-        self._writeRegister(self.CTRL3_C, 0x00)
+        self._writeRegister(self.LSM_CTRL1_XL, 0x00)
+        self._writeRegister(self.LSM_CTRL2_G, 0x00)
+        self._writeRegister(self.LSM_CTRL3_C, 0x00)
 
         # Initialize flags
         self.accEnabled = False
@@ -180,20 +180,20 @@ class LSM6DS33(I2C):
         self.lsmTempEnabled = False
 
         # Disable FIFO
-        self._writeRegister(self.FIFO_CTRL5, 0x00)
+        self._writeRegister(self.LSM_FIFO_CTRL5, 0x00)
 
         if accelerometer:
             # Accelerometer
             # 1.66 kHz / +/- 4g
             # 10001000b
-            self._writeRegister(self.CTRL1_XL, 0x88)
+            self._writeRegister(self.LSM_CTRL1_XL, 0x88)
             self.accEnabled = True
 
         if gyroscope:
             # Gyro
             # 1.66 kHz / 1000 dps
             # 10001000b
-            self._writeRegister(self.CTRL2_G, 0x88)
+            self._writeRegister(self.LSM_CTRL2_G, 0x88)
             self.gyroEnabled = True
 
         if temperature:

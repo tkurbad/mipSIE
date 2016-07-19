@@ -98,7 +98,7 @@ class LIS3MDL(I2C):
         """ Clean up routines. """
         try:
             # Power down magnetometer
-            self._writeRegister(self.CTRL_REG3, 0x03)
+            self._writeRegister(self.LIS_CTRL_REG3, 0x03)
             super(LIS3MDL, self).__del__()
         except:
             pass
@@ -111,15 +111,15 @@ class LIS3MDL(I2C):
             during I2C read operations.
         """
         # Disable magnetometer and temperature sensor first
-        self._writeRegister(self.CTRL_REG1, 0x00)
-        self._writeRegister(self.CTRL_REG3, 0x03)
+        self._writeRegister(self.LIS_CTRL_REG1, 0x00)
+        self._writeRegister(self.LIS_CTRL_REG3, 0x03)
 
         # Initialize flags
         self.magEnabled = False
         self.lisTempEnabled = False
 
         # Enable device in continuous conversion mode
-        self._writeRegister(self.CTRL_REG3, 0x00)
+        self._writeRegister(self.LIS_CTRL_REG3, 0x00)
 
         # Initial value for CTRL_REG1
         ctrl_reg1 = 0x00
@@ -135,7 +135,7 @@ class LIS3MDL(I2C):
 
             # CTRL_REG2
             # +/- 4 gauss full scale
-            self._writeRegister(self.CTRL_REG2, 0x00);
+            self._writeRegister(self.LIS_CTRL_REG2, 0x00);
 
             # CTRL_REG4
             # Ultra-high-performance mode for Z
@@ -151,7 +151,7 @@ class LIS3MDL(I2C):
             self.lisTempEnabled = True
 
         # Write calculated value to the CTRL_REG1 register
-        self._writeRegister(self.CTRL_REG1, ctrl_reg1)
+        self._writeRegister(self.LIS_CTRL_REG1, ctrl_reg1)
 
 
     def getMagnetometerRaw(self):
