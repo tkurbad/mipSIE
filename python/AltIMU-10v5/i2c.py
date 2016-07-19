@@ -122,7 +122,7 @@ class I2C(object):
 
     def _readRegister(self, address, register):
         """ Read a single I2C register. """
-        return self._i2c.read_i2c_block_data(self._address, register, count)
+        return self._i2c.read_i2c_block_data(address, register, count)
 
 
     def _readRegisters(self, address, register, count):
