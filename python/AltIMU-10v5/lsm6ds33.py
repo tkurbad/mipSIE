@@ -180,7 +180,7 @@ class LSM6DS33(I2C):
         self.lsmTempEnabled = False
 
         # Disable FIFO
-        #self._writeRegister(LSM6DS33_ADDR, self.LSM_FIFO_CTRL5, 0x00)
+        self._writeRegister(LSM6DS33_ADDR, self.LSM_FIFO_CTRL5, 0x00)
 
         if accelerometer:
             # Accelerometer
