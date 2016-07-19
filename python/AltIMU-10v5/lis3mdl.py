@@ -140,7 +140,7 @@ class LIS3MDL(I2C):
             # CTRL_REG4
             # Ultra-high-performance mode for Z
             # 00001100b
-            self._writeRegister(LIS3MDL_ADDR, self.CTRL_REG4, 0x0c);
+            self._writeRegister(LIS3MDL_ADDR, self.LIS_CTRL_REG4, 0x0c);
 
             self.magEnabled = True
 
