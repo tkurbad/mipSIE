@@ -34,6 +34,11 @@ while True:
          data['temperature']) = altIMUPressure.pressureRead()
 
         fusionPose = data['fusionPose']
+        print ('Raw r: %f p: %f y: %f' %
+               (fusionPose[0], 
+                fusionPose[1],
+                fusionPose[2]))
+
         print ('r: %f p: %f y: %f' %
                (degrees(fusionPose[0]), 
                 degrees(fusionPose[1]),
