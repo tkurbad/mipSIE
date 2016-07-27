@@ -866,8 +866,8 @@ Displays the names and descriptions of the various functions and settings provid
         funcList = [PicoBorgRev.__dict__.get(a) for a in dir(PicoBorgRev) if isinstance(PicoBorgRev.__dict__.get(a), types.FunctionType)]
         funcListSorted = sorted(funcList, key = lambda x: x.func_code.co_firstlineno)
 
-        print self.__doc__
-        print
+        print (self.__doc__)
+        print ()
         for func in funcListSorted:
-            print '=== %s === %s' % (func.func_name, func.func_doc)
+            print ('=== %s === %s' % (func.func_name, func.func_doc))
 
