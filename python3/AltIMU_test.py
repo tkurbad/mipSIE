@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+import atexit
+
 from math import degrees, pi, radians
 from time import sleep
 
@@ -28,6 +30,8 @@ poll_interval = altIMU.IMUGetPollInterval()
 
 pbr = PicoBorgRev()
 pbr.Init()
+
+atexit.register(pbr.MotorsOff)
 
 max_pitch = 30      # Maximum allowed pitch in degrees
 motor_divider = radians(max_pitch)
