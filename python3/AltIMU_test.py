@@ -3,7 +3,7 @@
 from math import degrees, pi
 from time import sleep
 
-from PicoBorgRev import PicoBorgRev
+from PicoBorgRev.PicoBorgRev import PicoBorgRev
 from RTIMU import RTIMU, RTPressure, Settings
 
 altIMUSettings = Settings('AltIMU')
