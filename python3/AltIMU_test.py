@@ -27,6 +27,7 @@ altIMU.setCompassEnable(True)
 poll_interval = altIMU.IMUGetPollInterval()
 
 pbr = PicoBorgRev()
+pbr.Init()
 
 while True:
     if altIMU.IMURead():
