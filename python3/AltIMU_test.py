@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 
-from math import degrees
+from math import degrees, pi
 from time import sleep
 
+from PicoBorgRev import PicoBorgRev
 from RTIMU import RTIMU, RTPressure, Settings
 
 altIMUSettings = Settings('AltIMU')
@@ -25,6 +26,8 @@ altIMU.setCompassEnable(True)
 
 poll_interval = altIMU.IMUGetPollInterval()
 
+pbr = PicoBorgRev()
+
 while True:
     if altIMU.IMURead():
         data = altIMU.getIMUData()
@@ -39,10 +42,11 @@ while True:
                 fusionPose[1],
                 fusionPose[2]))
 
-        print ('r: %f p: %f y: %f' %
-               (degrees(fusionPose[0]), 
-                degrees(fusionPose[1]),
-                degrees(fusionPose[2])))
+        pbr.SetMotor1(fusionPose[0] / pi)
+        #print ('r: %f p: %f y: %f' %
+        #       (degrees(fusionPose[0]), 
+        #        degrees(fusionPose[1]),
+        #        degrees(fusionPose[2])))
 
         if data['pressureValid']:
             print('Pressure: %f' % (
