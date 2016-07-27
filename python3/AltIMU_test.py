@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from math import degrees, pi
+from math import degrees, pi, radians
 from time import sleep
 
 from PicoBorgRev.PicoBorgRev import PicoBorgRev
@@ -29,6 +29,9 @@ poll_interval = altIMU.IMUGetPollInterval()
 pbr = PicoBorgRev()
 pbr.Init()
 
+max_pitch = 30      # Maximum allowed pitch in degrees
+motor_divider = radians(max_pitch)
+
 while True:
     if altIMU.IMURead():
         data = altIMU.getIMUData()
@@ -43,7 +46,7 @@ while True:
                 fusionPose[1],
                 fusionPose[2]))
 
-        pbr.SetMotor1(fusionPose[0] / pi)
+        pbr.SetMotor1(fusionPose[0] / motor_divider)
         #print ('r: %f p: %f y: %f' %
         #       (degrees(fusionPose[0]), 
         #        degrees(fusionPose[1]),
