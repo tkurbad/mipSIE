@@ -30,8 +30,11 @@ altIMU.setCompassEnable(True)
 # Get minimum poll interval
 poll_interval = altIMU.IMUGetPollInterval()
 
+# Initialize PicoBorg Reverse dual motor controller
 pbr = PicoBorgRev()
 pbr.Init()
+# Reset the emergency power off switch state
+pbr.ResetEpo()
 
 # Stop all motors upon program exit
 atexit.register(pbr.MotorsOff)
