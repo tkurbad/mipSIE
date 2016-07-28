@@ -38,7 +38,7 @@ sequence = [
 stepDelay = 1.0                     # Number of seconds between each sequence step
 
 # Loop over the sequence until the user presses CTRL+C
-print 'Press CTRL+C to finish'
+print ('Press CTRL+C to finish')
 try:
     while True:
         # Go through each entry in the sequence in order
