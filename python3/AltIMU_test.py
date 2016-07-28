@@ -34,7 +34,7 @@ pbr.Init()
 atexit.register(pbr.MotorsOff)
 
 # PID values
-KP = 1.0
+KP = 3.0 * pi
 KI = 0.0
 KD = 0.0
 
