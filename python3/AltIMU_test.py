@@ -38,8 +38,8 @@ atexit.register(pbr.MotorsOff)
 
 # PID coefficients - still need to be tuned
 KP = 2.5 * pi
-KI = 0.4
-KD = 0.4
+KI = 0.1
+KD = 0.1
 
 # Initialize some values
 lastFusionRollX = 0.0
