@@ -50,10 +50,10 @@ while True:
          data['temperature']) = altIMUPressure.pressureRead()
 
         (fusionRollX, fusionPitchY, fusionYawZ) = data['fusionPose']
-        print ('Raw r: %f p: %f y: %f' %
-               (fusionRollX, 
-                fusionPitchY,
-                fusionYawZ))
+        #print ('Raw r: %f p: %f y: %f' %
+        #       (fusionRollX, 
+        #        fusionPitchY,
+        #        fusionYawZ))
 
         Pvalue = KP * fusionRollX
         Ivalue += KI * fusionRollX
@@ -74,10 +74,10 @@ while True:
         #        degrees(fusionPose[1]),
         #        degrees(fusionPose[2])))
 
-        if data['pressureValid']:
-            print('Pressure: %f' % (
-                  data['pressure']))
-        if data['temperatureValid']:
-            print('Temperature: %f' % (data['temperature']))
+        #if data['pressureValid']:
+        #    print('Pressure: %f' % (
+        #          data['pressure']))
+        #if data['temperatureValid']:
+        #    print('Temperature: %f' % (data['temperature']))
 
         sleep(poll_interval * 0.001)
