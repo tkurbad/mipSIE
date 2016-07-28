@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 # coding: Latin-1
 
 # Simple example of a motor sequence script
@@ -45,9 +45,9 @@ try:
         for step in sequence:
             PBR.SetMotor1(step[0])                  # Set the first motor to the first value in the pair
             PBR.SetMotor2(step[1])                  # Set the second motor to the second value in the pair
-            print '%+.1f %+.1f' % (step[0], step[1])
+            print ('%+.1f %+.1f' % (step[0], step[1]))
             time.sleep(stepDelay)                   # Wait between steps
 except KeyboardInterrupt:
     # User has pressed CTRL+C
     PBR.MotorsOff()                 # Turn both motors off
-    print 'Done'
+    print ('Done')

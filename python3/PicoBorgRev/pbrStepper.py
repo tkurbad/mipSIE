@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 # coding: latin-1
 
 # Import library functions we need
@@ -20,13 +20,13 @@ PBR.Init()
 if not PBR.foundChip:
     boards = PicoBorgRev.ScanForPicoBorgReverse()
     if len(boards) == 0:
-        print 'No PicoBorg Reverse found, check you are attached :)'
+        print ('No PicoBorg Reverse found, check you are attached :)')
     else:
-        print 'No PicoBorg Reverse at address %02X, but we did find boards:' % (PBR.i2cAddress)
+        print ('No PicoBorg Reverse at address %02X, but we did find boards:' % PBR.i2cAddress)
         for board in boards:
-            print '    %02X (%d)' % (board, board)
-        print 'If you need to change the I²C address change the setup line so it is correct, e.g.'
-        print 'PBR.i2cAddress = 0x%02X' % (boards[0])
+            print ('    %02X (%d)' % (board, board))
+        print ('If you need to change the I²C address change the setup line so it is correct, e.g.')
+        print ('PBR.i2cAddress = 0x%02X' % boards[0])
     sys.exit()
 #PBR.SetEpoIgnore(True)                 # Uncomment to disable EPO latch, needed if you do not have a switch / jumper
 PBR.ResetEpo()
@@ -79,7 +79,7 @@ try:
         if steps == 0:
             # Turn off the drives and release the GPIO pins
             PBR.MotorsOff()
-            print 'Goodbye'
+            print ('Goodbye')
             break
         else:
             # Move the specified amount of steps
@@ -87,5 +87,5 @@ try:
 except KeyboardInterrupt:
     # CTRL+C exit, turn off the drives and release the GPIO pins
     PBR.MotorsOff()
-    print 'Terminated'
+    print ('Terminated')
 
