@@ -39,6 +39,7 @@ KI = 0.0
 KD = 0.0
 
 lastFusionRollX = 0.0
+Ivalue = 0.0
 
 while True:
     if altIMU.IMURead():
