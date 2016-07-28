@@ -38,7 +38,7 @@ atexit.register(pbr.MotorsOff)
 
 # PID coefficients - still need to be tuned
 KP = 2.5 * pi
-KI = 0.1
+KI = 0.01
 KD = 0.1
 
 # Initialize some values
