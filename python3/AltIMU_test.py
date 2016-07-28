@@ -33,8 +33,12 @@ pbr.Init()
 
 atexit.register(pbr.MotorsOff)
 
-max_pitch = 30      # Maximum allowed pitch in degrees
-motor_divider = radians(max_pitch)
+# PID values
+KP = 1.0
+KI = 0.0
+KD = 0.0
+
+lastFusionRollX = 0.0
 
 while True:
     if altIMU.IMURead():
@@ -44,13 +48,26 @@ while True:
          data['temperatureValid'],
          data['temperature']) = altIMUPressure.pressureRead()
 
-        fusionPose = data['fusionPose']
+        (fusionRollX, fusionPitchY, fusionYawZ) = data['fusionPose']
         print ('Raw r: %f p: %f y: %f' %
-               (fusionPose[0], 
-                fusionPose[1],
-                fusionPose[2]))
+               (fusionRollX, 
+                fusionPitchY,
+                fusionYawZ))
 
-        pbr.SetMotor1(fusionPose[0] / motor_divider)
+        Pvalue = KP * fusionRollX
+        Ivalue += KI * fusionRollX
+        Dvalue = KD * (fusionRollX - lastFusionRollX)
+        lastFusionRollX = fusionRollX
+
+        motorPWM = (Pvalue + Ivalue + Dvalue) / pi
+
+        if Ivalue > pi:
+            Ivalue = pi
+        if Ivalue < -pi:
+            Ivalue = -pi
+
+        pbr.SetMotor1(motorPWM)
+
         #print ('r: %f p: %f y: %f' %
         #       (degrees(fusionPose[0]), 
         #        degrees(fusionPose[1]),
