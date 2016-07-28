@@ -3,7 +3,7 @@
 
 # Import library functions we need 
 import PicoBorgRev
-import Tkinter
+import tkinter
 
 # Setup the PicoBorg Reverse
 global PBR
@@ -13,10 +13,10 @@ PBR.ResetEpo()                      # Reset the stop switch (EPO) state
                                     # if you do not have a switch across the two pin header then fit the jumper
 
 # Class respresenting the GUI dialog
-class PicoBorgRev_tk(Tkinter.Tk):
+class PicoBorgRev_tk(tkinter.Tk):
     # Constructor (called when the object is first created)
     def __init__(self, parent):
-        Tkinter.Tk.__init__(self, parent)
+        tkinter.Tk.__init__(self, parent)
         self.parent = parent
         self.protocol("WM_DELETE_WINDOW", self.OnExit) # Call the OnExit function when user closes the dialog
         self.Initialise()
@@ -27,13 +27,13 @@ class PicoBorgRev_tk(Tkinter.Tk):
         self.title('PicoBorg Reverse Example GUI')
         # Setup a grid of 2 sliders which command each motor output, plus a stop button for both motors
         self.grid()
-        self.sld1 = Tkinter.Scale(self, from_ = +100, to = -100, orient = Tkinter.VERTICAL, command = self.sld1_move)
+        self.sld1 = tkinter.Scale(self, from_ = +100, to = -100, orient = tkinter.VERTICAL, command = self.sld1_move)
         self.sld1.set(0)
         self.sld1.grid(column = 0, row = 0, rowspan = 1, columnspan = 1, sticky = 'NSEW')
-        self.sld2 = Tkinter.Scale(self, from_ = +100, to = -100, orient = Tkinter.VERTICAL, command = self.sld2_move)
+        self.sld2 = tkinter.Scale(self, from_ = +100, to = -100, orient = tkinter.VERTICAL, command = self.sld2_move)
         self.sld2.set(0)
         self.sld2.grid(column = 1, row = 0, rowspan = 1, columnspan = 1, sticky = 'NSEW')
-        self.butOff = Tkinter.Button(self, text = 'All Off', command = self.butOff_click)
+        self.butOff = tkinter.Button(self, text = 'All Off', command = self.butOff_click)
         self.butOff['font'] = ("Arial", 20, "bold")
         self.butOff.grid(column = 0, row = 1, rowspan = 1, columnspan = 2, sticky = 'NSEW')
         self.grid_columnconfigure(0, weight = 1)
