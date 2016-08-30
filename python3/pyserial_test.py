@@ -15,5 +15,8 @@ if ser.isOpen():
 
 ser.open()
 
-ser.write(b'Test\n\r')
+inFile = open('README.md', 'r')
+
+for line in inFile:
+    ser.write(b'%s\n\r' % line)
 ser.close()
