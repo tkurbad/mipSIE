@@ -18,5 +18,5 @@ ser.open()
 inFile = open('README.md', 'r')
 
 for line in inFile:
-    ser.write(b'%s\n\r' % line)
+    ser.write(line + b'\n\r')
 ser.close()
