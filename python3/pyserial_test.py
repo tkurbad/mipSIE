@@ -18,5 +18,6 @@ ser.open()
 inFile = open('README.md', 'r')
 
 for line in inFile:
-    ser.write(line.encode() + b'\n\r')
+    ser.write(line.encode())
 ser.close()
+inFile.close()
