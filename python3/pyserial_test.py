@@ -15,5 +15,5 @@ if ser.isOpen():
 
 ser.open()
 
-ser.write(b'Test')
+ser.write(b'Test\n\r')
 ser.close()
