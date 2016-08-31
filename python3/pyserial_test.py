@@ -1,23 +1,25 @@
 #!/usr/bin/python3
 
 import serial
+from time import sleep
 
 ser = serial.Serial(
     port='/dev/ttyAMA0',
-    baudrate=9600,
+    baudrate=115200,
+    bytesize=serial.EIGHTBITS,
     parity=serial.PARITY_NONE,
     stopbits=serial.STOPBITS_ONE,
-    bytesize=serial.EIGHTBITS
+    timeout = 0,
+    xonxoff = True,
+    #inter_byte_timeout = 0.001
 )
 
-if ser.isOpen():
-    ser.close()
+sleep(0.2)
 
-ser.open()
-
-inFile = open('README.md', 'r')
-
+inFile = open('README.md', 'rb')
 for line in inFile:
-    ser.write(line.encode())
+    ser.write(line)
+    sleep(0.01)
+
 ser.close()
 inFile.close()
