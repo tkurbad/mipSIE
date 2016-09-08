@@ -10,7 +10,7 @@ ser = serial.Serial(
     parity=serial.PARITY_NONE,
     stopbits=serial.STOPBITS_ONE,
     timeout = 0,
-    xonxoff = True,
+    xonxoff = False,
     #inter_byte_timeout = 0.001
 )
 
@@ -19,7 +19,7 @@ sleep(0.2)
 inFile = open('README.md', 'rb')
 for line in inFile:
     ser.write(line)
-    sleep(0.01)
+    sleep(0.03)
 
 ser.close()
 inFile.close()
