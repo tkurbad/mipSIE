@@ -5,7 +5,7 @@ import atexit
 from math import pi
 from time import sleep
 
-#from PicoBorgRev.PicoBorgRev import PicoBorgRev
+from PicoBorgRev.PicoBorgRev import PicoBorgRev
 from RTIMU import RTIMU, RTPressure, Settings
 
 altIMUSettings = Settings('MPU-9250')
@@ -31,13 +31,13 @@ altIMU.setCompassEnable(True)
 poll_interval = altIMU.IMUGetPollInterval()
 
 # Initialize PicoBorg Reverse dual motor controller
-#pbr = PicoBorgRev()
-#pbr.Init()
+pbr = PicoBorgRev()
+pbr.Init()
 # Reset the emergency power off switch state
-#pbr.ResetEpo()
+pbr.ResetEpo()
 
 # Stop all motors upon program exit
-#atexit.register(pbr.MotorsOff)
+atexit.register(pbr.MotorsOff)
 
 # PID coefficients - still need to be tuned
 KP = 2.5 * pi
@@ -84,7 +84,7 @@ while True:
 
         # Set motor PWM, i.e. set motors running
         print(motorPWM)
-        #pbr.SetMotor1(motorPWM)
+        pbr.SetMotor1(motorPWM)
 
         #print ('r: %f p: %f y: %f' %
         #       (degrees(fusionPose[0]), 
