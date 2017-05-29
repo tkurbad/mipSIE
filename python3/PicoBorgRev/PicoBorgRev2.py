@@ -236,7 +236,7 @@ Under most circumstances you should use the appropriate function instead of RawR
             rawReply = self.i2cRead.read(length)
             reply = []
             for singleByte in rawReply:
-                reply.append(ord(singleByte))
+                reply.append(singleByte)
             if command == reply[0]:
                 break
             else:
