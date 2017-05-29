@@ -317,7 +317,7 @@ If tryOtherBus is True, this function will attempt to use the other bus if the P
                 self.Print('Missing PicoBorg Reverse at %02X' % (self.i2cAddress))
         except KeyboardInterrupt:
             raise
-        except Exception, e:
+        except:
             self.foundChip = False
             self.Print('Missing PicoBorg Reverse at %02X' % (self.i2cAddress))
 
