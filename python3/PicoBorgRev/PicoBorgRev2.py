@@ -302,7 +302,6 @@ If tryOtherBus is True, this function will attempt to use the other bus if the P
         self.i2cWrite = io.open("/dev/i2c-" + str(self.busNumber), "wb", buffering = 0)
         fcntl.ioctl(self.i2cWrite, I2C_SLAVE, self.i2cAddress)
 
-        import pdb; pdb.set_trace()
         # Check for PicoBorg Reverse
         try:
             i2cRecv = self.RawRead(COMMAND_GET_ID, I2C_MAX_LEN)
