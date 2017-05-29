@@ -216,7 +216,6 @@ Under most circumstances you should use the appropriate function instead of RawW
         rawOutput = [command]
         for singleByte in data:
             rawOutput.append(singleByte)
-        import pdb; pdb.set_trace()
         self.i2cWrite.write(bytes(rawOutput))
 
 
