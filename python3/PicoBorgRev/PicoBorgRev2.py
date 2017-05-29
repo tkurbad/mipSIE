@@ -216,7 +216,7 @@ Under most circumstances you should use the appropriate function instead of RawW
         rawOutput = chr(command)
         for singleByte in data:
             rawOutput += chr(singleByte)
-        self.i2cWrite.write(rawOutput)
+        self.i2cWrite.write(bytes(rawOutput, 'ascii'))
 
 
     def RawRead(self, command, length, retryCount = 3):
@@ -317,7 +317,7 @@ If tryOtherBus is True, this function will attempt to use the other bus if the P
                 self.Print('Missing PicoBorg Reverse at %02X' % (self.i2cAddress))
         except KeyboardInterrupt:
             raise
-        except:
+        except Exception, e:
             self.foundChip = False
             self.Print('Missing PicoBorg Reverse at %02X' % (self.i2cAddress))
 
