@@ -213,10 +213,10 @@ Command codes can be found at the top of PicoBorgRev.py, data is a list of 0 or 
 
 Under most circumstances you should use the appropriate function instead of RawWrite
         """
-        rawOutput = chr(command)
+        rawOutput = [command]
         for singleByte in data:
-            rawOutput += chr(singleByte)
-        self.i2cWrite.write(bytes(rawOutput, 'UTF-8'))
+            rawOutput.append(singleByte)
+        self.i2cWrite.write(bytes(rawOutput))
 
 
     def RawRead(self, command, length, retryCount = 3):
