@@ -216,7 +216,7 @@ Under most circumstances you should use the appropriate function instead of RawW
         rawOutput = chr(command)
         for singleByte in data:
             rawOutput += chr(singleByte)
-        self.i2cWrite.write(bytes(rawOutput))
+        self.i2cWrite.write(bytes(rawOutput, 'UTF-8'))
 
 
     def RawRead(self, command, length, retryCount = 3):
