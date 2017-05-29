@@ -216,7 +216,7 @@ Under most circumstances you should use the appropriate function instead of RawW
         rawOutput = chr(command)
         for singleByte in data:
             rawOutput += chr(singleByte)
-        self.i2cWrite.write(bytes(rawOutput, 'ascii'))
+        self.i2cWrite.write(bytes(rawOutput))
 
 
     def RawRead(self, command, length, retryCount = 3):
@@ -234,6 +234,7 @@ Under most circumstances you should use the appropriate function instead of RawR
         while retryCount > 0:
             self.RawWrite(command, [])
             rawReply = self.i2cRead.read(length)
+            import pdb; pdb.set_trace()
             reply = []
             for singleByte in rawReply:
                 reply.append(ord(singleByte))
